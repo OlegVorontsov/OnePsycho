@@ -91,50 +91,61 @@ void AOnePsychoCharacter::Tick(float DeltaSeconds)
             CursorToWorld->SetWorldRotation(CursorR);
         }
     }
-
     MovementTick(DeltaSeconds);
 }
 
+//переопределяем стандартную функцию нажатия клавиш
 void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputComponent)
 {
+    //стандартная функция
     Super::SetupPlayerInputComponent(NewInputComponent);
 
+    //переопределяем нажатия клавиш на наши функции
     NewInputComponent->BindAxis(TEXT("MoveForward"), this, &AOnePsychoCharacter::InputAxisX);
     NewInputComponent->BindAxis(TEXT("MoveRight"), this, &AOnePsychoCharacter::InputAxisY);
 }
 
+//функции движения
 void AOnePsychoCharacter::InputAxisX(float Value)
 {
     AxisX = Value;
 }
-
 void AOnePsychoCharacter::InputAxisY(float Value)
 {
     AxisY = Value;
 }
-
 void AOnePsychoCharacter::MovementTick(float DeltaTime)
 {
     AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
     AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
+    //записываем в переменную поворот персонажа вокруг оси Z
     float ActualRotationYaw = GetActorRotation().Yaw;
 
+    //записываем в переменную контроллер персонажа
     APlayerController* myController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
     if (myController && MovementState != EMovementState::SprintRun_State)
     {
+        //создаем переменную для точки куда указывает курсор
         FHitResult ResultHit;
+
+        //получаем точки соприкосновения курсора по созданноу каналу
         myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
+
+        //получаем угол поворота в сторону курсора и записываем в переменную
         float FindRotatorResultYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
+
+        //вычисляем разницу в углах поворота в сторону курсора и персонажа
         float YawDifference = FindRotatorResultYaw - ActualRotationYaw;
 
-        // Коррекция определения ротации (в градусах)
+        //коррекция определения ротации (в градусах)
         if (YawDifference < -180)
             YawDifference += 360;
         else if (YawDifference > 180)
             YawDifference -= 360;
 
-        // Сглаживание изменения ротации
+        //сглаживание поворота персонажа
         if (-RotationChangeStep >= YawDifference)
             AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
         else if (YawDifference >= RotationChangeStep)
@@ -143,15 +154,20 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
             SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
     }
 
-    // Реализация выносливости
+    //реализация выносливости
+
+    //если включен спринт и персонжа двигается
     if (MovementState == EMovementState::SprintRun_State && (AxisX != 0 || AxisY != 0))
     {
+        //если выносливость > скорости бега
         if (SprintRunStamina > MovementSpeedInfo.RunSpeedNormal)
         {
+            //уменьшаем выносливость
             SprintRunStamina -= StaminaStepDown;
         }
         else
         {
+            //переходим на бег
             SprintRunEnabled = false;
             MovementState = EMovementState::Run_State;
             CharacterUpdate();
@@ -163,6 +179,7 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
             GetCharacterMovement()->MaxWalkSpeed = ResSpeed;
         }
     }
+    //восстанавливаем выносливость
     else
     {
         if (SprintRunStamina < SprintRunStaminaUpperLimit)
@@ -172,7 +189,7 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
     }
 }
 
-// Изменение скорости передвижения
+// Изменение скорости движения
 void AOnePsychoCharacter::CharacterUpdate()
 {
     switch (MovementState)
@@ -195,17 +212,15 @@ void AOnePsychoCharacter::CharacterUpdate()
             ResSpeed = SprintRunStamina;
         else
             ResSpeed = MovementSpeedInfo.SprintRunSpeedRun;
-
         break;
 
     default:
         break;
     }
-
     GetCharacterMovement()->MaxWalkSpeed = ResSpeed;
 }
 
-// Изменение режима передвижения
+// Изменение режима движения
 void AOnePsychoCharacter::ChangeMovementState()
 {
     if (SprintRunEnabled)
@@ -231,6 +246,5 @@ void AOnePsychoCharacter::ChangeMovementState()
             MovementState = EMovementState::Run_State;
         }
     }
-
     CharacterUpdate();
 }

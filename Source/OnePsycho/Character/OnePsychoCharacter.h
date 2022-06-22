@@ -45,9 +45,11 @@ private:
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     EMovementState MovementState = EMovementState::Run_State;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FCharacterSpeed MovementSpeedInfo;
 
+    //переменные включения видов движения
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool SprintRunEnabled = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -58,36 +60,40 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationChangeStep = 5;
 
+    //переменные для реализации выносливости
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float StaminaStepDown = 0.5;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float StaminaStepUp = 0.5;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float BufferSprintRunStamina = 200;
+
+    //выносливость = скорости спринта
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float SprintRunStamina = MovementSpeedInfo.SprintRunSpeedRun;
+
+    //предел выносливости
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float SprintRunStaminaUpperLimit = MovementSpeedInfo.SprintRunSpeedRun + BufferSprintRunStamina;
 
+    //функции движения
     UFUNCTION()
     void InputAxisX(float Value);
     UFUNCTION()
     void InputAxisY(float Value);
-
-    float AxisX = 0.0f;
-    float AxisY = 0.0f;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float ResSpeed = MovementSpeedInfo.RunSpeedNormal;
-
-    // Tick Func
     UFUNCTION()
     void MovementTick(float DeltaTime);
 
+    float AxisX = 0.0f;
+    float AxisY = 0.0f;
+
+    //переменная результирущей скорости движения
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    float ResSpeed = MovementSpeedInfo.RunSpeedNormal;
+
+    //функции изменения скорости движения
     UFUNCTION(BlueprintCallable)
     void CharacterUpdate();
     UFUNCTION(BlueprintCallable)
     void ChangeMovementState();
 };
-
-// test
-// test 2

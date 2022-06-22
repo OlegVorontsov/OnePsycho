@@ -5,6 +5,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Types.generated.h"
 
+//енам типов движения
 UENUM(BlueprintType)
 enum class EMovementState : uint8
 {
@@ -15,6 +16,7 @@ enum class EMovementState : uint8
     SprintRun_State UMETA(DisplayName = "SprintRun State")
 };
 
+//структура скоростей движения
 USTRUCT(BlueprintType)
 struct FCharacterSpeed
 {
