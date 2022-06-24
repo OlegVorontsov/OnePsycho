@@ -37,7 +37,7 @@ AOnePsychoCharacter::AOnePsychoCharacter()
     CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
     CameraBoom->TargetArmLength = 800.f;
     CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
-    CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
+    CameraBoom->bDoCollisionTest = true; // Don't want to pull camera in when it collides with level
 
     // Create a camera...
     TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
@@ -45,7 +45,7 @@ AOnePsychoCharacter::AOnePsychoCharacter()
     TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
     // Create a decal in the world to show the cursor's location
-    CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
+    /*CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
     CursorToWorld->SetupAttachment(RootComponent);
     static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(
         TEXT("Material'/Game/Blueprint/Character/M_Cursor_Decal.M_Cursor_Decal'"));
@@ -54,7 +54,7 @@ AOnePsychoCharacter::AOnePsychoCharacter()
         CursorToWorld->SetDecalMaterial(DecalMaterialAsset.Object);
     }
     CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
-    CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
+    CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());*/
 
     // Activate ticking in order to update the cursor every frame.
     PrimaryActorTick.bCanEverTick = true;
@@ -65,7 +65,7 @@ void AOnePsychoCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
-    if (CursorToWorld != nullptr)
+    /*if (CursorToWorld != nullptr)
     {
         if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
         {
@@ -90,8 +90,39 @@ void AOnePsychoCharacter::Tick(float DeltaSeconds)
             CursorToWorld->SetWorldLocation(TraceHitResult.Location);
             CursorToWorld->SetWorldRotation(CursorR);
         }
+    }*/
+    if (CurrentCursor)
+    {
+        APlayerController* myPC = Cast<APlayerController>(GetController());
+        if (myPC)
+        {
+            FHitResult TraceHitResult;
+            myPC->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
+            FVector CursorFV = TraceHitResult.ImpactNormal;
+            FRotator CursorR = CursorFV.Rotation();
+
+            CurrentCursor->SetWorldLocation(TraceHitResult.Location);
+            CurrentCursor->SetWorldRotation(CursorR);
+        }
     }
     MovementTick(DeltaSeconds);
+}
+
+void AOnePsychoCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // InitWeapon();
+
+    if (CursorMaterial)
+    {
+        CurrentCursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
+    }
+}
+
+UDecalComponent* AOnePsychoCharacter::GetCursorToWorld()
+{
+    return CurrentCursor;
 }
 
 //переопределяем стандартную функцию нажатия клавиш
@@ -103,6 +134,10 @@ void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputCom
     //переопределяем нажатия клавиш на наши функции
     NewInputComponent->BindAxis(TEXT("MoveForward"), this, &AOnePsychoCharacter::InputAxisX);
     NewInputComponent->BindAxis(TEXT("MoveRight"), this, &AOnePsychoCharacter::InputAxisY);
+
+    // NewInputComponent->BindAction(TEXT("FireEvent"), EInputEvent::IE_Pressed, this,
+    // &ATPSCharacter::InputAttackPressed); NewInputComponent->BindAction(TEXT("FireEvent"), EInputEvent::IE_Released,
+    // this, &ATPSCharacter::InputAttackReleased);
 }
 
 //функции движения
@@ -131,7 +166,8 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
         FHitResult ResultHit;
 
         //получаем точки соприкосновения курсора по созданноу каналу
-        myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
+        // myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
+        myController->GetHitResultUnderCursor(ECC_GameTraceChannel1, true, ResultHit);
 
         //получаем угол поворота в сторону курсора и записываем в переменную
         float FindRotatorResultYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
