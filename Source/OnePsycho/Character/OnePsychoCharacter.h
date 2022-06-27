@@ -9,6 +9,8 @@
 
 #include "OnePsychoCharacter.generated.h"
 
+class AWeaponDefault;
+
 UCLASS(Blueprintable)
 class AOnePsychoCharacter : public ACharacter
 {
@@ -112,4 +114,25 @@ public:
     void CharacterUpdate();
     UFUNCTION(BlueprintCallable)
     void ChangeMovementState();
+
+    // Weapon
+    AWeaponDefault* CurrentWeapon = nullptr;
+
+    // for demo
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
+    TSubclassOf<AWeaponDefault> InitWeaponClass = nullptr;
+
+    UFUNCTION(BlueprintCallable)
+    void InitWeapon();
+
+    UFUNCTION(BlueprintCallable)
+    AWeaponDefault* GetCurrentWeapon();
+
+    UFUNCTION()
+    void InputAttackPressed();
+    UFUNCTION()
+    void InputAttackReleased();
+
+    UFUNCTION(BlueprintCallable)
+    void AttackCharEvent(bool bIsFiring);
 };

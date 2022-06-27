@@ -8,6 +8,24 @@ public class OnePsycho : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule" });
-    }
+        PublicDependencyModuleNames.AddRange(new string[] {
+			"Core",
+			"CoreUObject",
+			"Engine",
+			"InputCore",
+			"HeadMountedDisplay",
+			"NavigationSystem",
+			"AIModule"
+		});
+
+		//явно подключаем необходимые папки проекта
+		PublicIncludePaths.AddRange(new string[]
+		{
+			"OnePsycho/Character",
+			"OnePsycho/FuncLibrary",
+			"OnePsycho/Game",
+			"OnePsycho/Weapon",
+		});
+	}
 }
+

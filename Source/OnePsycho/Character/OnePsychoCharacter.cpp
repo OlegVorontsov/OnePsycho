@@ -11,9 +11,9 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
-
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "OnePsycho/Weapon/WeaponDefault.h"
 
 AOnePsychoCharacter::AOnePsychoCharacter()
 {
@@ -112,8 +112,10 @@ void AOnePsychoCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    // InitWeapon();
+    //спавн оружия
+    InitWeapon();
 
+    //спавн курсора
     if (CursorMaterial)
     {
         CurrentCursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
@@ -135,9 +137,10 @@ void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputCom
     NewInputComponent->BindAxis(TEXT("MoveForward"), this, &AOnePsychoCharacter::InputAxisX);
     NewInputComponent->BindAxis(TEXT("MoveRight"), this, &AOnePsychoCharacter::InputAxisY);
 
-    // NewInputComponent->BindAction(TEXT("FireEvent"), EInputEvent::IE_Pressed, this,
-    // &ATPSCharacter::InputAttackPressed); NewInputComponent->BindAction(TEXT("FireEvent"), EInputEvent::IE_Released,
-    // this, &ATPSCharacter::InputAttackReleased);
+    NewInputComponent->BindAction(
+        TEXT("FireEvent"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::InputAttackPressed);
+    NewInputComponent->BindAction(
+        TEXT("FireEvent"), EInputEvent::IE_Released, this, &AOnePsychoCharacter::InputAttackReleased);
 }
 
 //функции движения
@@ -283,4 +286,59 @@ void AOnePsychoCharacter::ChangeMovementState()
         }
     }
     CharacterUpdate();
+}
+
+AWeaponDefault* AOnePsychoCharacter::GetCurrentWeapon()
+{
+    return CurrentWeapon;
+}
+
+//спавн оружия
+void AOnePsychoCharacter::InitWeapon()
+{
+    if (InitWeaponClass)
+    {
+        FVector SpawnLocation = FVector(0);
+        FRotator SpawnRotation = FRotator(0);
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        SpawnParams.Owner = GetOwner();
+        SpawnParams.Instigator = GetInstigator();
+
+        AWeaponDefault* myWeapon =
+            Cast<AWeaponDefault>(GetWorld()->SpawnActor(InitWeaponClass, &SpawnLocation, &SpawnRotation, SpawnParams));
+        if (myWeapon)
+        {
+            FAttachmentTransformRules Rule(EAttachmentRule::SnapToTarget, false);
+            myWeapon->AttachToComponent(GetMesh(), Rule, FName("WeaponSocketRightHand"));
+            CurrentWeapon = myWeapon;
+
+            // myWeapon->UpdateStateWeapon(MovementState);
+        }
+    }
+}
+
+//функции на инпут стрельбы
+void AOnePsychoCharacter::InputAttackPressed()
+{
+    AttackCharEvent(true);
+}
+void AOnePsychoCharacter::InputAttackReleased()
+{
+    AttackCharEvent(false);
+}
+
+//функция стрельбы
+void AOnePsychoCharacter::AttackCharEvent(bool bIsFiring)
+{
+    AWeaponDefault* myWeapon = nullptr;
+    myWeapon = GetCurrentWeapon();
+    if (myWeapon)
+    {
+        // ToDo Check melee or range
+        myWeapon->SetWeaponStateFire(bIsFiring);
+    }
+    else
+        UE_LOG(LogTemp, Warning, TEXT("AOnePsychoCharacter::AttackCharEvent - CurrentWeapon - NULL"));
 }
