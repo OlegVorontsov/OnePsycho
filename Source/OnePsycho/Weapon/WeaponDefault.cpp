@@ -43,7 +43,6 @@ void AWeaponDefault::WeaponInit()
     {
         SkeletalMeshWeapon->DestroyComponent(true);
     }
-
     if (StaticMeshWeapon && !StaticMeshWeapon->GetStaticMesh())
     {
         StaticMeshWeapon->DestroyComponent();

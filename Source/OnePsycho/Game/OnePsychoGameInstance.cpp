@@ -2,13 +2,12 @@
 
 #include "OnePsychoGameInstance.h"
 
-FWeaponInfo UOnePsychoGameInstance::GetWeaponInfoByName(FName NameWeapon)
+bool UOnePsychoGameInstance::GetWeaponInfoByName(FName NameWeapon, FWeaponInfo& OutInfo)
 {
-    // bool bIsFind = false;
-    FWeaponInfo WeaponInfo;
-    return WeaponInfo;
+    bool bIsFind = false;
+    FWeaponInfo* WeaponInfoRow;
 
-    /*if (WeaponInfoTable)
+    if (WeaponInfoTable)
     {
         WeaponInfoRow = WeaponInfoTable->FindRow<FWeaponInfo>(NameWeapon, "", false);
         if (WeaponInfoRow)
@@ -21,6 +20,5 @@ FWeaponInfo UOnePsychoGameInstance::GetWeaponInfoByName(FName NameWeapon)
     {
         UE_LOG(LogTemp, Warning, TEXT("UOnePsychoGameInstance::GetWeaponInfoByName - WeaponTable -NULL"));
     }
-
-    return bIsFind;*/
+    return bIsFind;
 }

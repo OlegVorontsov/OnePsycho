@@ -120,9 +120,6 @@ public:
 
     // for demo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
-    TSubclassOf<AWeaponDefault> InitWeaponClass = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
     FName InitWeaponName;
 
     //функция спавна оружия

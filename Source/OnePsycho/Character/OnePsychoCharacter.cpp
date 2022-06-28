@@ -308,27 +308,34 @@ void AOnePsychoCharacter::InitWeapon(FName IdWeapon)
     FWeaponInfo myWeaponInfo;
     if (myGI)
     {
-        myWeaponInfo = myGI->GetWeaponInfoByName(IdWeapon);
-    }
-    if (myWeaponInfo.WeaponClass)
-    {
-        FVector SpawnLocation = FVector(0);
-        FRotator SpawnRotation = FRotator(0);
-
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        SpawnParams.Owner = GetOwner();
-        SpawnParams.Instigator = GetInstigator();
-
-        AWeaponDefault* myWeapon = Cast<AWeaponDefault>(
-            GetWorld()->SpawnActor(myWeaponInfo.WeaponClass, &SpawnLocation, &SpawnRotation, SpawnParams));
-        if (myWeapon)
+        if (myGI->GetWeaponInfoByName(IdWeapon, myWeaponInfo))
         {
-            FAttachmentTransformRules Rule(EAttachmentRule::SnapToTarget, false);
-            myWeapon->AttachToComponent(GetMesh(), Rule, FName("WeaponSocketRightHand"));
-            CurrentWeapon = myWeapon;
+            if (myWeaponInfo.WeaponClass)
+            {
+                FVector SpawnLocation = FVector(0);
+                FRotator SpawnRotation = FRotator(0);
 
-            myWeapon->UpdateStateWeapon(MovementState);
+                FActorSpawnParameters SpawnParams;
+                SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+                SpawnParams.Owner = GetOwner();
+                SpawnParams.Instigator = GetInstigator();
+
+                AWeaponDefault* myWeapon = Cast<AWeaponDefault>(
+                    GetWorld()->SpawnActor(myWeaponInfo.WeaponClass, &SpawnLocation, &SpawnRotation, SpawnParams));
+                if (myWeapon)
+                {
+                    FAttachmentTransformRules Rule(EAttachmentRule::SnapToTarget, false);
+                    myWeapon->AttachToComponent(GetMesh(), Rule, FName("WeaponSocketRightHand"));
+                    CurrentWeapon = myWeapon;
+
+                    myWeapon->WeaponSetting = myWeaponInfo;
+                    myWeapon->UpdateStateWeapon(MovementState);
+                }
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("UOnePsychoGameInstance::InitWeapon - Weapon not found in table"));
         }
     }
 }
