@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "OnePsycho/Weapon/WeaponDefault.h"
+#include "OnePsychoGameInstance.h"
 
 AOnePsychoCharacter::AOnePsychoCharacter()
 {
@@ -113,7 +114,7 @@ void AOnePsychoCharacter::BeginPlay()
     Super::BeginPlay();
 
     //спавн оружия
-    InitWeapon();
+    InitWeapon(InitWeaponName);
 
     //спавн курсора
     if (CursorMaterial)
@@ -286,6 +287,13 @@ void AOnePsychoCharacter::ChangeMovementState()
         }
     }
     CharacterUpdate();
+
+    // Weapon state update
+    AWeaponDefault* myWeapon = GetCurrentWeapon();
+    if (myWeapon)
+    {
+        myWeapon->UpdateStateWeapon(MovementState);
+    }
 }
 
 AWeaponDefault* AOnePsychoCharacter::GetCurrentWeapon()
@@ -293,10 +301,16 @@ AWeaponDefault* AOnePsychoCharacter::GetCurrentWeapon()
     return CurrentWeapon;
 }
 
-//спавн оружия
-void AOnePsychoCharacter::InitWeapon()
+//функция спавна оружия
+void AOnePsychoCharacter::InitWeapon(FName IdWeapon)
 {
-    if (InitWeaponClass)
+    UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetGameInstance());
+    FWeaponInfo myWeaponInfo;
+    if (myGI)
+    {
+        myWeaponInfo = myGI->GetWeaponInfoByName(IdWeapon);
+    }
+    if (myWeaponInfo.WeaponClass)
     {
         FVector SpawnLocation = FVector(0);
         FRotator SpawnRotation = FRotator(0);
@@ -306,15 +320,15 @@ void AOnePsychoCharacter::InitWeapon()
         SpawnParams.Owner = GetOwner();
         SpawnParams.Instigator = GetInstigator();
 
-        AWeaponDefault* myWeapon =
-            Cast<AWeaponDefault>(GetWorld()->SpawnActor(InitWeaponClass, &SpawnLocation, &SpawnRotation, SpawnParams));
+        AWeaponDefault* myWeapon = Cast<AWeaponDefault>(
+            GetWorld()->SpawnActor(myWeaponInfo.WeaponClass, &SpawnLocation, &SpawnRotation, SpawnParams));
         if (myWeapon)
         {
             FAttachmentTransformRules Rule(EAttachmentRule::SnapToTarget, false);
             myWeapon->AttachToComponent(GetMesh(), Rule, FName("WeaponSocketRightHand"));
             CurrentWeapon = myWeapon;
 
-            // myWeapon->UpdateStateWeapon(MovementState);
+            myWeapon->UpdateStateWeapon(MovementState);
         }
     }
 }

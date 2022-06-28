@@ -110,5 +110,13 @@ void AWeaponDefault::Fire()
 
 FProjectileInfo AWeaponDefault::GetProjectile()
 {
-    return WeaponSetting.ProjectileSettings;
+    return WeaponSetting.ProjectileSetting;
 }
+
+void AWeaponDefault::UpdateStateWeapon(EMovementState NewMovementState)
+{
+    // ToDo Dispersion
+    ChangeDispersion();
+}
+
+void AWeaponDefault::ChangeDispersion() {}

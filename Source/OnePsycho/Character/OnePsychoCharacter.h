@@ -122,8 +122,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
     TSubclassOf<AWeaponDefault> InitWeaponClass = nullptr;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
+    FName InitWeaponName;
+
+    //функция спавна оружия
     UFUNCTION(BlueprintCallable)
-    void InitWeapon();
+    void InitWeapon(FName IdWeapon);
 
     UFUNCTION(BlueprintCallable)
     AWeaponDefault* GetCurrentWeapon();

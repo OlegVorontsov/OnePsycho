@@ -22,20 +22,22 @@ class ONEPSYCHO_API AWeaponDefault : public AActor
 public:
     AWeaponDefault();
 
+    //объекты для создания оружия
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
     class USceneComponent* SceneComponent = nullptr;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
     class USkeletalMeshComponent* SkeletalMeshWeapon = nullptr;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
     class UStaticMeshComponent* StaticMeshWeapon = nullptr;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
     class UArrowComponent* ShootLocation = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
+    //переменная для структуры об оружии
+    UPROPERTY()
     FWeaponInfo WeaponSetting;
+    //??????
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+    FAddicionalWeaponInfo WeaponInfo;
 
 protected:
     virtual void BeginPlay() override;
@@ -45,10 +47,12 @@ public:
 
     void WeaponInit();
 
-    void FireTick(float DeltaTime);
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
     bool WeaponFiring = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic")
+    bool WeaponReloading = false;
+
+    void FireTick(float DeltaTime);
 
     UFUNCTION(BlueprintCallable)
     void SetWeaponStateFire(bool bIsFire);
@@ -59,8 +63,8 @@ public:
 
     void Fire();
 
-    // void UpdateStateWeapon(EMovementState NewMovementState);
-    // void ChangeDispersion();
+    void UpdateStateWeapon(EMovementState NewMovementState);
+    void ChangeDispersion();
 
     // Timers'flags
     float FireTime = 0.0;
