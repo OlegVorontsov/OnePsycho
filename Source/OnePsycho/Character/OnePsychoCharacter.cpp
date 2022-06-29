@@ -194,7 +194,46 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
             AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
         else
             SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
+
+        //указываем оружию стрелять всторону расположения курсора
+        if (CurrentWeapon)
+        {
+            //переменная высоты от пола до оружия
+            FVector Displacement = FVector(0);
+            switch (MovementState)
+            {
+            case EMovementState::Aim_State:
+                Displacement = FVector(0.0f, 0.0f, 160.0f);
+                CurrentWeapon->ShouldReduceDispersion = true;
+                break;
+            case EMovementState::AimWalk_State:
+                CurrentWeapon->ShouldReduceDispersion = true;
+                Displacement = FVector(0.0f, 0.0f, 160.0f);
+                break;
+            case EMovementState::Walk_State:
+                Displacement = FVector(0.0f, 0.0f, 120.0f);
+                CurrentWeapon->ShouldReduceDispersion = false;
+                break;
+            case EMovementState::Run_State:
+                Displacement = FVector(0.0f, 0.0f, 120.0f);
+                CurrentWeapon->ShouldReduceDispersion = false;
+                break;
+            case EMovementState::SprintRun_State:
+                break;
+            default:
+                break;
+            }
+            //передаем в оружие точку курсора + высоту над полом
+            CurrentWeapon->ShootEndLocation = ResultHit.Location + Displacement;
+            // aim cursor like 3d Widget?
+        }
     }
+    if (CurrentWeapon)
+        //если персонаж двигается включаем разброс пуль
+        if (FMath::IsNearlyZero(GetVelocity().Size(), 0.5f))
+            CurrentWeapon->ShouldReduceDispersion = true;
+        else
+            CurrentWeapon->ShouldReduceDispersion = false;
 
     //реализация выносливости
 

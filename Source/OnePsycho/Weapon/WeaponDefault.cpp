@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "WeaponDefault.h"
+#include "DrawDebugHelpers.h"
 
 AWeaponDefault::AWeaponDefault()
 {
@@ -36,6 +37,36 @@ void AWeaponDefault::Tick(float DeltaTime)
 
     FireTick(DeltaTime);
     ReloadTick(DeltaTime);
+    DispersionTick(DeltaTime);
+}
+
+//изменение разброса пуль
+void AWeaponDefault::DispersionTick(float DeltaTime)
+{
+    if (!WeaponReloading)
+    {
+        if (!WeaponFiring)
+        {
+            if (ShouldReduceDispersion)
+                CurrentDispersion = CurrentDispersion - CurrentDispersionReduction;
+            else
+                CurrentDispersion = CurrentDispersion + CurrentDispersionReduction;
+        }
+        if (CurrentDispersion < CurrentDispersionMin)
+        {
+            CurrentDispersion = CurrentDispersionMin;
+        }
+        else
+        {
+            if (CurrentDispersion > CurrentDispersionMax)
+            {
+                CurrentDispersion = CurrentDispersionMax;
+            }
+        }
+    }
+    if (ShowDebug)
+        UE_LOG(LogTemp, Warning, TEXT("Dispersion: MAX = %f. MIN = %f. Current = %f"), CurrentDispersionMax,
+            CurrentDispersionMin, CurrentDispersion);
 }
 
 void AWeaponDefault::WeaponInit()
@@ -56,11 +87,12 @@ void AWeaponDefault::SetWeaponStateFire(bool bIsFire)
         WeaponFiring = bIsFire;
     else
         WeaponFiring = false;
+    FireTimer = 0.01f;
 }
 
 bool AWeaponDefault::CheckWeaponCanFire()
 {
-    return true;
+    return !BlockFire;
 }
 
 void AWeaponDefault::FireTick(float DeltaTime)
@@ -112,6 +144,7 @@ void AWeaponDefault::Fire()
 {
     FireTimer = WeaponSetting.RateOfFire;
     WeaponInfo.Round = WeaponInfo.Round - 1;
+    ChangeDispersionByShot();
 
     if (ShootLocation)
     {
@@ -119,6 +152,13 @@ void AWeaponDefault::Fire()
         FRotator SpawnRotation = ShootLocation->GetComponentRotation();
         FProjectileInfo ProjectileInfo;
         ProjectileInfo = GetProjectile();
+
+        //вектор направления вылета пули
+        FVector Dir = GetFireEndLocation() - SpawnLocation;
+        Dir.Normalize();
+
+        FMatrix myMatrix(Dir, FVector(0, 0, 0), FVector(0, 0, 0), FVector::ZeroVector);
+        SpawnRotation = myMatrix.Rotator();
 
         if (ProjectileInfo.Projectile)
         {
@@ -153,10 +193,119 @@ FProjectileInfo AWeaponDefault::GetProjectile()
 void AWeaponDefault::UpdateStateWeapon(EMovementState NewMovementState)
 {
     // ToDo Dispersion
-    ChangeDispersion();
+    BlockFire = false;
+
+    switch (NewMovementState)
+    {
+    case EMovementState::Aim_State:
+
+        CurrentDispersionMax = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimMax;
+        CurrentDispersionMin = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimMin;
+        CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimRecoil;
+        CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
+        break;
+    case EMovementState::AimWalk_State:
+
+        CurrentDispersionMax = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimMax;
+        CurrentDispersionMin = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimMin;
+        CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimRecoil;
+        CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
+        break;
+    case EMovementState::Walk_State:
+
+        CurrentDispersionMax = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimMax;
+        CurrentDispersionMin = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimMin;
+        CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimRecoil;
+        CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
+        break;
+    case EMovementState::Run_State:
+
+        CurrentDispersionMax = WeaponSetting.DispersionWeapon.Run_StateDispersionAimMax;
+        CurrentDispersionMin = WeaponSetting.DispersionWeapon.Run_StateDispersionAimMin;
+        CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Run_StateDispersionAimRecoil;
+        CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
+        break;
+    case EMovementState::SprintRun_State:
+
+        BlockFire = true;
+        SetWeaponStateFire(false); // set fire trigger to false
+        // Block Fire
+        break;
+    default:
+        break;
+    }
 }
 
-void AWeaponDefault::ChangeDispersion() {}
+void AWeaponDefault::ChangeDispersionByShot()
+{
+    CurrentDispersion = CurrentDispersion + CurrentDispersionRecoil;
+}
+
+float AWeaponDefault::GetCurrentDispersion() const
+{
+    float Result = CurrentDispersion;
+    return Result;
+}
+
+//функция добавления разброса
+FVector AWeaponDefault::ApplyDispersionToShoot(FVector DirectionShoot) const
+{
+    return FMath::VRandCone(DirectionShoot, GetCurrentDispersion() * PI / 180.f);
+}
+
+//функция конечной точки стрельбы с разбросом
+FVector AWeaponDefault::GetFireEndLocation() const
+{
+    bool bShootDirection = false;
+    FVector EndLocation = FVector(0.f);
+
+    // FVector tmpV = (ShootLocation->GetComponentLocation() - ShootEndLocation);
+    // UE_LOG(LogTemp, Warning, TEXT("Vector: X = %f. Y = %f. Size = %f"), tmpV.X, tmpV.Y, tmpV.Size());
+
+    if (byBarrel) // tmpV.Size() > SizeVectorToChangeShootDirectionLogic)
+    {
+        //стрельба в направлении расположения курсора
+        EndLocation =
+            ShootLocation->GetComponentLocation() +
+            ApplyDispersionToShoot((ShootLocation->GetComponentLocation() - ShootEndLocation).GetSafeNormal()) *
+                -20000.0f;
+
+        DrawDebugCone(GetWorld(), ShootLocation->GetComponentLocation(),
+            -(ShootLocation->GetComponentLocation() - ShootEndLocation), WeaponSetting.DistacneTrace,
+            GetCurrentDispersion() * PI / 180.f, GetCurrentDispersion() * PI / 180.f, 32, FColor::Yellow, false, .1f,
+            (uint8)'\000', 1.0f);
+    }
+    else
+    {
+        //стрельба в направлении дула оружия
+        EndLocation = ShootLocation->GetComponentLocation() +
+                      ApplyDispersionToShoot(ShootLocation->GetForwardVector()) * 20000.0f;
+
+        DrawDebugCone(GetWorld(), ShootLocation->GetComponentLocation(), ShootLocation->GetForwardVector(),
+            WeaponSetting.DistacneTrace, GetCurrentDispersion() * PI / 180.f, GetCurrentDispersion() * PI / 180.f, 32,
+            FColor::Orange, false, .1f, (uint8)'\000', 1.0f);
+    }
+
+    if (ShowDebug)
+    {
+        // direction weapon look
+        DrawDebugLine(GetWorld(), ShootLocation->GetComponentLocation(),
+            ShootLocation->GetComponentLocation() + ShootLocation->GetForwardVector() * 500.0f, FColor::Cyan, false,
+            5.f, (uint8)'\000', 0.5f);
+        // direction projectile must fly
+        DrawDebugLine(GetWorld(), ShootLocation->GetComponentLocation(), ShootEndLocation, FColor::Red, false, 5.f,
+            (uint8)'\000', 0.5f);
+        // Direction Projectile Current fly
+        DrawDebugLine(GetWorld(), ShootLocation->GetComponentLocation(), EndLocation, FColor::Black, false, 5.f,
+            (uint8)'\000', 0.5f);
+
+        DrawDebugSphere(GetWorld(),
+            ShootLocation->GetComponentLocation() +
+                ShootLocation->GetForwardVector() * SizeVectorToChangeShootDirectionLogic,
+            10.f, 8, FColor::Red, false, 4.0f);
+    }
+    return EndLocation;
+}
 
 //функция возвращает кол-во выстрелов
 int32 AWeaponDefault::GetWeaponRound()
@@ -170,7 +319,7 @@ void AWeaponDefault::InitReload()
 
     ReloadTimer = WeaponSetting.ReloadTime;
 
-    // anim
+    // add anim
 }
 
 void AWeaponDefault::FinishReload()

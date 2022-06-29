@@ -93,14 +93,14 @@ struct FWeaponDispersion
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     float DispersionAimShootCoef = 1.0f;
 
-    /*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     float Aim_StateDispersionAimMax = 2.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     float Aim_StateDispersionAimMin = 0.3f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     float Aim_StateDispersionAimRecoil = 1.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
-    float Aim_StateDispersionReduction = .3f;
+    float Aim_StateDispersionReduction = 0.3f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     float AimWalk_StateDispersionAimMax = 1.0f;
@@ -127,7 +127,7 @@ struct FWeaponDispersion
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     float Run_StateDispersionAimRecoil = 1.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
-    float Run_StateDispersionReduction = 0.1f;*/
+    float Run_StateDispersionReduction = 0.1f;
 };
 
 //структура об оружии с доступом из таблиц

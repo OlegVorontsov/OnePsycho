@@ -54,6 +54,7 @@ public:
 
     void FireTick(float DeltaTime);
     void ReloadTick(float DeltaTime);
+    void DispersionTick(float DeltaTime);
 
     UFUNCTION(BlueprintCallable)
     void SetWeaponStateFire(bool bIsFire);
@@ -64,8 +65,14 @@ public:
 
     void Fire();
 
+    FVector ApplyDispersionToShoot(FVector DirectionShoot) const;
+    FVector GetFireEndLocation() const;
+
     void UpdateStateWeapon(EMovementState NewMovementState);
-    void ChangeDispersion();
+    void ChangeDispersionByShot();
+    float GetCurrentDispersion() const;
+
+    // int8 GetNumberProjectileByShot() const;
 
     // Timers'flags
     float FireTimer = 0.0f;
@@ -82,4 +89,23 @@ public:
 
     void InitReload();
     void FinishReload();
+
+    // flags
+    bool BlockFire = false;
+    // Dispersion
+    bool ShouldReduceDispersion = false;
+    float CurrentDispersion = 0.0f;
+    float CurrentDispersionMax = 1.0f;
+    float CurrentDispersionMin = 0.1f;
+    float CurrentDispersionRecoil = 0.1f;
+    float CurrentDispersionReduction = 0.1f;
+
+    FVector ShootEndLocation = FVector(0);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    bool ShowDebug = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    bool byBarrel = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    float SizeVectorToChangeShootDirectionLogic = 100.0f;
 };
