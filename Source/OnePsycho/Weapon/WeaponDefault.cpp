@@ -35,6 +35,7 @@ void AWeaponDefault::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     FireTick(DeltaTime);
+    ReloadTick(DeltaTime);
 }
 
 void AWeaponDefault::WeaponInit()
@@ -64,16 +65,53 @@ bool AWeaponDefault::CheckWeaponCanFire()
 
 void AWeaponDefault::FireTick(float DeltaTime)
 {
-    if (WeaponFiring)
-        if (FireTime < 0.f)
-            Fire();
+    //патроны еще есть
+    if (GetWeaponRound() > 0)
+    {
+        if (WeaponFiring)
+        {
+            if (FireTimer < 0.f)
+            {
+                if (!WeaponReloading)
+                {
+                    Fire();
+                }
+            }
+            else
+            {
+                FireTimer -= DeltaTime;
+            }
+        }
+    }
+    else
+    {
+        //оружие не перезаряжается
+        if (!WeaponReloading)
+        {
+            InitReload();
+        }
+    }
+}
+
+void AWeaponDefault::ReloadTick(float DeltaTime)
+{
+    if (WeaponReloading)
+    {
+        if (ReloadTimer < 0.0f)
+        {
+            FinishReload();
+        }
         else
-            FireTime -= DeltaTime;
+        {
+            ReloadTimer -= DeltaTime;
+        }
+    }
 }
 
 void AWeaponDefault::Fire()
 {
-    FireTime = WeaponSetting.RateOfFire;
+    FireTimer = WeaponSetting.RateOfFire;
+    WeaponInfo.Round = WeaponInfo.Round - 1;
 
     if (ShootLocation)
     {
@@ -119,3 +157,25 @@ void AWeaponDefault::UpdateStateWeapon(EMovementState NewMovementState)
 }
 
 void AWeaponDefault::ChangeDispersion() {}
+
+//функция возвращает кол-во выстрелов
+int32 AWeaponDefault::GetWeaponRound()
+{
+    return WeaponInfo.Round;
+}
+
+void AWeaponDefault::InitReload()
+{
+    WeaponReloading = true;
+
+    ReloadTimer = WeaponSetting.ReloadTime;
+
+    // anim
+}
+
+void AWeaponDefault::FinishReload()
+{
+    WeaponReloading = false;
+
+    WeaponInfo.Round = WeaponSetting.MaxRound;
+}

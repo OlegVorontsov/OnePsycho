@@ -35,7 +35,7 @@ public:
     //переменная для структуры об оружии
     UPROPERTY()
     FWeaponInfo WeaponSetting;
-    //??????
+    //переменная для дополнительной структуры об оружии
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
     FAddicionalWeaponInfo WeaponInfo;
 
@@ -53,6 +53,7 @@ public:
     bool WeaponReloading = false;
 
     void FireTick(float DeltaTime);
+    void ReloadTick(float DeltaTime);
 
     UFUNCTION(BlueprintCallable)
     void SetWeaponStateFire(bool bIsFire);
@@ -67,5 +68,18 @@ public:
     void ChangeDispersion();
 
     // Timers'flags
-    float FireTime = 0.0;
+    float FireTimer = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic")
+    float ReloadTimer = 0.0f;
+    // debug
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic Debug")
+    float ReloadTime = 0.0f;
+
+    //функция возвращает кол-во выстрелов
+    UFUNCTION(BlueprintCallable)
+    int32 GetWeaponRound();
+
+    void InitReload();
+    void FinishReload();
 };

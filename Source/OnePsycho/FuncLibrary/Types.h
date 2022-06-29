@@ -193,12 +193,13 @@ struct FWeaponInfo : public FTableRowBase
     UStaticMesh* ShellBullets = nullptr;
 };
 
-//??????
+//дополнительная структура об оружии
 USTRUCT(BlueprintType)
 struct FAddicionalWeaponInfo
 {
     GENERATED_BODY()
 
+    //кол-во выстрелов
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     int32 Round = 10;
 };

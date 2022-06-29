@@ -142,6 +142,8 @@ void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputCom
         TEXT("FireEvent"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::InputAttackPressed);
     NewInputComponent->BindAction(
         TEXT("FireEvent"), EInputEvent::IE_Released, this, &AOnePsychoCharacter::InputAttackReleased);
+    NewInputComponent->BindAction(
+        TEXT("ReloadEvent"), EInputEvent::IE_Released, this, &AOnePsychoCharacter::TryReloadWeapon);
 }
 
 //функции движения
@@ -329,6 +331,9 @@ void AOnePsychoCharacter::InitWeapon(FName IdWeapon)
                     CurrentWeapon = myWeapon;
 
                     myWeapon->WeaponSetting = myWeaponInfo;
+                    myWeapon->WeaponInfo.Round = myWeaponInfo.MaxRound;
+                    // debug
+                    myWeapon->ReloadTime = myWeaponInfo.ReloadTime;
                     myWeapon->UpdateStateWeapon(MovementState);
                 }
             }
@@ -362,4 +367,15 @@ void AOnePsychoCharacter::AttackCharEvent(bool bIsFiring)
     }
     else
         UE_LOG(LogTemp, Warning, TEXT("AOnePsychoCharacter::AttackCharEvent - CurrentWeapon - NULL"));
+}
+
+void AOnePsychoCharacter::TryReloadWeapon()
+{
+    if (CurrentWeapon)
+    {
+        if (CurrentWeapon->GetWeaponRound() <= CurrentWeapon->WeaponSetting.MaxRound)
+        {
+            CurrentWeapon->InitReload();
+        }
+    }
 }

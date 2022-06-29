@@ -126,6 +126,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void InitWeapon(FName IdWeapon);
 
+    //функция перезарядки
+    UFUNCTION(BlueprintCallable)
+    void TryReloadWeapon();
+
     UFUNCTION(BlueprintCallable)
     AWeaponDefault* GetCurrentWeapon();
 
