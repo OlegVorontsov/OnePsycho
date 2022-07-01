@@ -54,27 +54,31 @@ struct FProjectileInfo
     float ProjectileInitSpeed = 2000.0f;
 
     // material to decal on hit
-    /*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
-    TMap<TEnumAsByte<EPhysicalSurface>, UMaterialInterface*> HitDecals;*/
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    TMap<TEnumAsByte<EPhysicalSurface>, UMaterialInterface*> HitDecals;
 
     // Sound when hit
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
-    // USoundBase* HitSound = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    USoundBase* HitSound = nullptr;
 
     // fx when hit check by surface
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
-    // TMap<TEnumAsByte<EPhysicalSurface>, UParticleSystem*> HitFXs;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    TMap<TEnumAsByte<EPhysicalSurface>, UParticleSystem*> HitFXs;
 
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
-    // UParticleSystem* ExploseFX = nullptr;
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
-    // USoundBase* ExploseSound = nullptr;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    UParticleSystem* ExploseFX = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    USoundBase* ExploseSound = nullptr;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
     bool bIsLikeBomp = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
     float ProjectileMaxRadiusDamage = 200.0f;
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
-    // float ExploseMaxDamage = 40.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    float ExploseMaxDamage = 40.0f;
     //  Timer add
 };
 
@@ -151,6 +155,8 @@ struct FWeaponInfo : public FTableRowBase
     //мах кол-во патронов в магазине
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     int32 MaxRound = 10;
+
+    //кол-во пуль за 1 выстрел
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     int32 NumberProjectileByShot = 1;
 

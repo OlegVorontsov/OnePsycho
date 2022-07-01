@@ -11,8 +11,8 @@
 
 #include "WeaponDefault.generated.h"
 
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponFireStart);//ToDo Delegate on event weapon fire - Anim char, state
-// char...
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadStart, UAnimMontage*, Anim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponReloadEnd);
 
 UCLASS()
 class ONEPSYCHO_API AWeaponDefault : public AActor
@@ -21,6 +21,9 @@ class ONEPSYCHO_API AWeaponDefault : public AActor
 
 public:
     AWeaponDefault();
+
+    FOnWeaponReloadStart OnWeaponReloadStart;
+    FOnWeaponReloadEnd OnWeaponReloadEnd;
 
     //объекты для создания оружия
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
@@ -72,7 +75,7 @@ public:
     void ChangeDispersionByShot();
     float GetCurrentDispersion() const;
 
-    // int8 GetNumberProjectileByShot() const;
+    int8 GetNumberProjectileByShot() const;
 
     // Timers'flags
     float FireTimer = 0.0f;
@@ -104,8 +107,8 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool ShowDebug = false;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-    bool byBarrel = false;
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    // bool byBarrel = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     float SizeVectorToChangeShootDirectionLogic = 100.0f;
 };

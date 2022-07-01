@@ -15,7 +15,9 @@ public class OnePsycho : ModuleRules
 			"InputCore",
 			"HeadMountedDisplay",
 			"NavigationSystem",
-			"AIModule"
+			"AIModule",
+			"PhysicsCore",
+			"Slate"
 		});
 
 		//явно подключаем необходимые папки проекта

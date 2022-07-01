@@ -2,6 +2,8 @@
 
 #include "WeaponDefault.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 AWeaponDefault::AWeaponDefault()
 {
@@ -146,6 +148,14 @@ void AWeaponDefault::Fire()
     WeaponInfo.Round = WeaponInfo.Round - 1;
     ChangeDispersionByShot();
 
+    //звук и эффект выстрела
+    UGameplayStatics::SpawnSoundAtLocation(
+        GetWorld(), WeaponSetting.SoundFireWeapon, ShootLocation->GetComponentLocation());
+    UGameplayStatics::SpawnEmitterAtLocation(
+        GetWorld(), WeaponSetting.EffectFireWeapon, ShootLocation->GetComponentTransform());
+
+    int8 NumberProjectile = GetNumberProjectileByShot();
+
     if (ShootLocation)
     {
         FVector SpawnLocation = ShootLocation->GetComponentLocation();
@@ -153,34 +163,41 @@ void AWeaponDefault::Fire()
         FProjectileInfo ProjectileInfo;
         ProjectileInfo = GetProjectile();
 
-        //вектор направления вылета пули
-        FVector Dir = GetFireEndLocation() - SpawnLocation;
-        Dir.Normalize();
-
-        FMatrix myMatrix(Dir, FVector(0, 0, 0), FVector(0, 0, 0), FVector::ZeroVector);
-        SpawnRotation = myMatrix.Rotator();
-
-        if (ProjectileInfo.Projectile)
+        FVector EndLocation;
+        for (int8 i = 0; i < NumberProjectile; i++)
         {
-            // Projectile Init ballistic fire
+            EndLocation = GetFireEndLocation();
 
-            FActorSpawnParameters SpawnParams;
-            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            SpawnParams.Owner = GetOwner();
-            SpawnParams.Instigator = GetInstigator();
+            //вектор направления вылета пули
+            FVector Dir = EndLocation - SpawnLocation;
+            Dir.Normalize();
 
-            AProjectileDefault* myProjectile = Cast<AProjectileDefault>(
-                GetWorld()->SpawnActor(ProjectileInfo.Projectile, &SpawnLocation, &SpawnRotation, SpawnParams));
-            if (myProjectile)
+            FMatrix myMatrix(Dir, FVector(0, 0, 0), FVector(0, 0, 0), FVector::ZeroVector);
+            SpawnRotation = myMatrix.Rotator();
+
+            if (ProjectileInfo.Projectile)
             {
-                // ToDo Init Projectile settings by id in table row(or keep in weapon table)
-                myProjectile->InitialLifeSpan = 20.0f;
-                // Projectile->BulletProjectileMovement->InitialSpeed = 2500.0f;
+                // Projectile Init ballistic fire
+
+                FActorSpawnParameters SpawnParams;
+                SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+                SpawnParams.Owner = GetOwner();
+                SpawnParams.Instigator = GetInstigator();
+
+                AProjectileDefault* myProjectile = Cast<AProjectileDefault>(
+                    GetWorld()->SpawnActor(ProjectileInfo.Projectile, &SpawnLocation, &SpawnRotation, SpawnParams));
+                if (myProjectile)
+                {
+                    // ToDo Init Projectile settings by id in table row(or keep in weapon table)
+                    // myProjectile->InitialLifeSpan = 20.0f;
+                    // Projectile->BulletProjectileMovement->InitialSpeed = 2500.0f;
+                    myProjectile->InitProjectile(WeaponSetting.ProjectileSetting);
+                }
             }
-        }
-        else
-        {
-            // ToDo Projectile null Init trace fire
+            else
+            {
+                // ToDo Projectile null Init trace fire
+            }
         }
     }
 }
@@ -259,31 +276,31 @@ FVector AWeaponDefault::GetFireEndLocation() const
     bool bShootDirection = false;
     FVector EndLocation = FVector(0.f);
 
-    // FVector tmpV = (ShootLocation->GetComponentLocation() - ShootEndLocation);
+    FVector tmpV = (ShootLocation->GetComponentLocation() - ShootEndLocation);
     // UE_LOG(LogTemp, Warning, TEXT("Vector: X = %f. Y = %f. Size = %f"), tmpV.X, tmpV.Y, tmpV.Size());
 
-    if (byBarrel) // tmpV.Size() > SizeVectorToChangeShootDirectionLogic)
+    if (tmpV.Size() > SizeVectorToChangeShootDirectionLogic)
     {
         //стрельба в направлении расположения курсора
         EndLocation =
             ShootLocation->GetComponentLocation() +
             ApplyDispersionToShoot((ShootLocation->GetComponentLocation() - ShootEndLocation).GetSafeNormal()) *
                 -20000.0f;
-
-        DrawDebugCone(GetWorld(), ShootLocation->GetComponentLocation(),
-            -(ShootLocation->GetComponentLocation() - ShootEndLocation), WeaponSetting.DistacneTrace,
-            GetCurrentDispersion() * PI / 180.f, GetCurrentDispersion() * PI / 180.f, 32, FColor::Yellow, false, .1f,
-            (uint8)'\000', 1.0f);
+        if (ShowDebug)
+            DrawDebugCone(GetWorld(), ShootLocation->GetComponentLocation(),
+                -(ShootLocation->GetComponentLocation() - ShootEndLocation), WeaponSetting.DistacneTrace,
+                GetCurrentDispersion() * PI / 180.f, GetCurrentDispersion() * PI / 180.f, 32, FColor::Yellow, false,
+                .1f, (uint8)'\000', 1.0f);
     }
     else
     {
         //стрельба в направлении дула оружия
         EndLocation = ShootLocation->GetComponentLocation() +
                       ApplyDispersionToShoot(ShootLocation->GetForwardVector()) * 20000.0f;
-
-        DrawDebugCone(GetWorld(), ShootLocation->GetComponentLocation(), ShootLocation->GetForwardVector(),
-            WeaponSetting.DistacneTrace, GetCurrentDispersion() * PI / 180.f, GetCurrentDispersion() * PI / 180.f, 32,
-            FColor::Orange, false, .1f, (uint8)'\000', 1.0f);
+        if (ShowDebug)
+            DrawDebugCone(GetWorld(), ShootLocation->GetComponentLocation(), ShootLocation->GetForwardVector(),
+                WeaponSetting.DistacneTrace, GetCurrentDispersion() * PI / 180.f, GetCurrentDispersion() * PI / 180.f,
+                32, FColor::Orange, false, .1f, (uint8)'\000', 1.0f);
     }
 
     if (ShowDebug)
@@ -299,12 +316,17 @@ FVector AWeaponDefault::GetFireEndLocation() const
         DrawDebugLine(GetWorld(), ShootLocation->GetComponentLocation(), EndLocation, FColor::Black, false, 5.f,
             (uint8)'\000', 0.5f);
 
-        DrawDebugSphere(GetWorld(),
-            ShootLocation->GetComponentLocation() +
-                ShootLocation->GetForwardVector() * SizeVectorToChangeShootDirectionLogic,
-            10.f, 8, FColor::Red, false, 4.0f);
+        // DrawDebugSphere(GetWorld(),
+        // ShootLocation->GetComponentLocation() +
+        // ShootLocation->GetForwardVector() * SizeVectorToChangeShootDirectionLogic,
+        // 10.f, 8, FColor::Red, false, 4.0f);
     }
     return EndLocation;
+}
+
+int8 AWeaponDefault::GetNumberProjectileByShot() const
+{
+    return WeaponSetting.NumberProjectileByShot;
 }
 
 //функция возвращает кол-во выстрелов
@@ -319,7 +341,8 @@ void AWeaponDefault::InitReload()
 
     ReloadTimer = WeaponSetting.ReloadTime;
 
-    // add anim
+    if (WeaponSetting.AnimCharReload)
+        OnWeaponReloadStart.Broadcast(WeaponSetting.AnimCharReload);
 }
 
 void AWeaponDefault::FinishReload()
@@ -327,4 +350,6 @@ void AWeaponDefault::FinishReload()
     WeaponReloading = false;
 
     WeaponInfo.Round = WeaponSetting.MaxRound;
+
+    OnWeaponReloadEnd.Broadcast();
 }

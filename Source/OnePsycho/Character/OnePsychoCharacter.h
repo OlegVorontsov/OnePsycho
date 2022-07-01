@@ -140,4 +140,14 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void AttackCharEvent(bool bIsFiring);
+
+    UFUNCTION()
+    void WeaponReloadStart(UAnimMontage* Anim);
+    UFUNCTION()
+    void WeaponReloadEnd();
+
+    UFUNCTION(BlueprintNativeEvent)
+    void WeaponReloadStart_BP(UAnimMontage* Anim);
+    UFUNCTION(BlueprintNativeEvent)
+    void WeaponReloadEnd_BP();
 };

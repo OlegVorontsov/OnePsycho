@@ -228,12 +228,6 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
             // aim cursor like 3d Widget?
         }
     }
-    if (CurrentWeapon)
-        //если персонаж двигается включаем разброс пуль
-        if (FMath::IsNearlyZero(GetVelocity().Size(), 0.5f))
-            CurrentWeapon->ShouldReduceDispersion = true;
-        else
-            CurrentWeapon->ShouldReduceDispersion = false;
 
     //реализация выносливости
 
@@ -374,6 +368,9 @@ void AOnePsychoCharacter::InitWeapon(FName IdWeapon)
                     // debug
                     myWeapon->ReloadTime = myWeaponInfo.ReloadTime;
                     myWeapon->UpdateStateWeapon(MovementState);
+
+                    myWeapon->OnWeaponReloadStart.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadStart);
+                    myWeapon->OnWeaponReloadEnd.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadEnd);
                 }
             }
         }
@@ -418,3 +415,17 @@ void AOnePsychoCharacter::TryReloadWeapon()
         }
     }
 }
+
+void AOnePsychoCharacter::WeaponReloadStart(UAnimMontage* Anim)
+{
+    WeaponReloadStart_BP(Anim);
+}
+
+void AOnePsychoCharacter::WeaponReloadEnd()
+{
+    WeaponReloadEnd_BP();
+}
+
+void AOnePsychoCharacter::WeaponReloadStart_BP_Implementation(UAnimMontage* Anim) {}
+
+void AOnePsychoCharacter::WeaponReloadEnd_BP_Implementation() {}
