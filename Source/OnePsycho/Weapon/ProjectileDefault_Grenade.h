@@ -19,8 +19,8 @@ public:
 
     void TimerExplose(float DeltaTime);
 
-    /*virtual void BulletCollisionSphereHit(class UPrimitiveComponent* HitComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;*/
+    // virtual void BulletCollisionSphereHit(class UPrimitiveComponent* HitComp, AActor* OtherActor,
+    // UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
     virtual void ImpactProjectile() override;
 

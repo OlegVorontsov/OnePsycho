@@ -2,6 +2,15 @@
 
 #include "ProjectileDefault_Grenade.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+
+DEFINE_LOG_CATEGORY_STATIC(ProjectileDefault_Grenade_Log, All, All);
+
+int32 DebugExplodeShow = 0;
+FAutoConsoleVariableRef CVAREExplodeShow(TEXT("OnePsycho.DebugExplode"), //
+    DebugExplodeShow,                                                    //
+    TEXT("Draw debug for explode"),                                      //
+    ECVF_Cheat);
 
 void AProjectileDefault_Grenade::BeginPlay()
 {
@@ -33,6 +42,7 @@ void AProjectileDefault_Grenade::TimerExplose(float DeltaTime)
 //     UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 //{
 //     Super::BulletCollisionSphereHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+//
 // }
 
 void AProjectileDefault_Grenade::ImpactProjectile()
@@ -43,6 +53,14 @@ void AProjectileDefault_Grenade::ImpactProjectile()
 
 void AProjectileDefault_Grenade::Explose()
 {
+    if (DebugExplodeShow)
+    {
+        DrawDebugSphere(GetWorld(), GetActorLocation(), ProjectileSetting.ProjectileMinRadiusDamage, 12, FColor::Green,
+            false, 12.0f);
+        DrawDebugSphere(
+            GetWorld(), GetActorLocation(), ProjectileSetting.ProjectileMaxRadiusDamage, 12, FColor::Red, false, 12.0f);
+    }
+
     TimerEnabled = false;
     if (ProjectileSetting.ExploseFX)
     {
@@ -55,8 +73,16 @@ void AProjectileDefault_Grenade::Explose()
     }
 
     TArray<AActor*> IgnoredActor;
-    UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ProjectileSetting.ExploseMaxDamage,
-        ProjectileSetting.ExploseMaxDamage * 0.2f, GetActorLocation(), 1000.0f, 2000.0f, 5, NULL, IgnoredActor, nullptr,
+    UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), //
+        ProjectileSetting.ExplodeMaxDamage,                    //
+        ProjectileSetting.ExplodeMaxDamage * 0.2f,             //
+        GetActorLocation(),                                    //
+        1000.0f,                                               //
+        2000.0f,                                               //
+        5,                                                     //
+        NULL,                                                  //
+        IgnoredActor,                                          //
+        nullptr,                                               //
         nullptr);
 
     this->Destroy();

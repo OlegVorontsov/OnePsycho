@@ -11,6 +11,7 @@
 
 #include "WeaponDefault.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponFireStart, UAnimMontage*, Anim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadStart, UAnimMontage*, Anim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponReloadEnd);
 
@@ -22,6 +23,7 @@ class ONEPSYCHO_API AWeaponDefault : public AActor
 public:
     AWeaponDefault();
 
+    FOnWeaponFireStart OnWeaponFireStart;
     FOnWeaponReloadStart OnWeaponReloadStart;
     FOnWeaponReloadEnd OnWeaponReloadEnd;
 
@@ -38,6 +40,7 @@ public:
     //переменная для структуры об оружии
     UPROPERTY()
     FWeaponInfo WeaponSetting;
+
     //переменная для дополнительной структуры об оружии
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
     FAddicionalWeaponInfo WeaponInfo;
@@ -50,14 +53,11 @@ public:
 
     void WeaponInit();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
-    bool WeaponFiring = false;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic")
-    bool WeaponReloading = false;
-
     void FireTick(float DeltaTime);
     void ReloadTick(float DeltaTime);
     void DispersionTick(float DeltaTime);
+    void ClipDropTick(float DeltaTime);
+    void ShellDropTick(float DeltaTime);
 
     UFUNCTION(BlueprintCallable)
     void SetWeaponStateFire(bool bIsFire);
@@ -77,12 +77,10 @@ public:
 
     int8 GetNumberProjectileByShot() const;
 
-    // Timers'flags
+    // Timers
     float FireTimer = 0.0f;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic")
     float ReloadTimer = 0.0f;
-    // debug
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic Debug")
     float ReloadTime = 0.0f;
 
@@ -94,7 +92,14 @@ public:
     void FinishReload();
 
     // flags
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
+    bool WeaponFiring = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic")
+    bool WeaponReloading = false;
+    bool WeaponAiming = false;
+
     bool BlockFire = false;
+
     // Dispersion
     bool ShouldReduceDispersion = false;
     float CurrentDispersion = 0.0f;
@@ -103,7 +108,19 @@ public:
     float CurrentDispersionRecoil = 0.1f;
     float CurrentDispersionReduction = 0.1f;
 
+    // Timer dropmagazine on reload
+    bool DropClipFlag = false;
+    float DropClipTimer = -1.0f;
+
+    // shell flag
+    bool DropShellFlag = false;
+    float DropShellTimer = -1.0f;
+
     FVector ShootEndLocation = FVector(0);
+
+    UFUNCTION()
+    void InitDropMesh(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh,
+        float ImpulseRandomDespersion, float PowerImpulse, float CustomMass);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool ShowDebug = false;

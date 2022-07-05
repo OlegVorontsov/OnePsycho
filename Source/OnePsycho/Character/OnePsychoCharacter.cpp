@@ -182,18 +182,18 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
         float YawDifference = FindRotatorResultYaw - ActualRotationYaw;
 
         //коррекци€ определени€ ротации (в градусах)
-        if (YawDifference < -180)
-            YawDifference += 360;
-        else if (YawDifference > 180)
-            YawDifference -= 360;
+        // if (YawDifference < -180)
+        // YawDifference += 360;
+        // else if (YawDifference > 180)
+        // YawDifference -= 360;
 
         //сглаживание поворота персонажа
-        if (-RotationChangeStep >= YawDifference)
-            AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
-        else if (YawDifference >= RotationChangeStep)
-            AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
-        else
-            SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
+        // if (-RotationChangeStep >= YawDifference)
+        // AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
+        // else if (YawDifference >= RotationChangeStep)
+        // AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
+        // else
+        SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
 
         //указываем оружию стрел€ть всторону расположени€ курсора
         if (CurrentWeapon)
@@ -416,6 +416,11 @@ void AOnePsychoCharacter::TryReloadWeapon()
     }
 }
 
+void AOnePsychoCharacter::WeaponFireStart(UAnimMontage* Anim)
+{
+    WeaponFireStart_BP(Anim);
+}
+
 void AOnePsychoCharacter::WeaponReloadStart(UAnimMontage* Anim)
 {
     WeaponReloadStart_BP(Anim);
@@ -425,6 +430,8 @@ void AOnePsychoCharacter::WeaponReloadEnd()
 {
     WeaponReloadEnd_BP();
 }
+
+void AOnePsychoCharacter::WeaponFireStart_BP_Implementation(UAnimMontage* Anim) {}
 
 void AOnePsychoCharacter::WeaponReloadStart_BP_Implementation(UAnimMontage* Anim) {}
 
