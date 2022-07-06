@@ -84,7 +84,7 @@ struct FProjectileInfo
     USoundBase* ExploseSound = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explode")
-    bool bIsLikeBomp = false;
+    float TimeToExplose = 3.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explode")
     float ProjectileMinRadiusDamage = 200.0f;

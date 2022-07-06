@@ -27,7 +27,7 @@ void AProjectileDefault_Grenade::TimerExplose(float DeltaTime)
 {
     if (TimerEnabled)
     {
-        if (TimerToExplose > TimeToExplose)
+        if (TimerToExplose > ProjectileSetting.TimeToExplose)
         {
             Explose();
         }
