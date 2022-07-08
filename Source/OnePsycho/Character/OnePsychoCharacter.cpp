@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "OnePsycho/Weapon/WeaponDefault.h"
+#include "OnePsycho/Components/CharacterInventoryComponent.h"
 #include "OnePsychoGameInstance.h"
 
 AOnePsychoCharacter::AOnePsychoCharacter()
@@ -45,17 +46,13 @@ AOnePsychoCharacter::AOnePsychoCharacter()
     TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-    // Create a decal in the world to show the cursor's location
-    /*CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
-    CursorToWorld->SetupAttachment(RootComponent);
-    static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(
-        TEXT("Material'/Game/Blueprint/Character/M_Cursor_Decal.M_Cursor_Decal'"));
-    if (DecalMaterialAsset.Succeeded())
+    // Создаем систему инвенторя
+    CharacterInventoryComponent = CreateDefaultSubobject<UCharacterInventoryComponent>(TEXT("InventoryComponent"));
+
+    if (CharacterInventoryComponent)
     {
-        CursorToWorld->SetDecalMaterial(DecalMaterialAsset.Object);
+        CharacterInventoryComponent->OnSwitchWeapon.AddDynamic(this, &AOnePsychoCharacter::InitWeapon);
     }
-    CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
-    CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());*/
 
     // Activate ticking in order to update the cursor every frame.
     PrimaryActorTick.bCanEverTick = true;
@@ -66,32 +63,6 @@ void AOnePsychoCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
-    /*if (CursorToWorld != nullptr)
-    {
-        if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
-        {
-            if (UWorld* World = GetWorld())
-            {
-                FHitResult HitResult;
-                FCollisionQueryParams Params(NAME_None, FCollisionQueryParams::GetUnknownStatId());
-                FVector StartLocation = TopDownCameraComponent->GetComponentLocation();
-                FVector EndLocation = TopDownCameraComponent->GetComponentRotation().Vector() * 2000.0f;
-                Params.AddIgnoredActor(this);
-                World->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, Params);
-                FQuat SurfaceRotation = HitResult.ImpactNormal.ToOrientationRotator().Quaternion();
-                CursorToWorld->SetWorldLocationAndRotation(HitResult.Location, SurfaceRotation);
-            }
-        }
-        else if (APlayerController* PC = Cast<APlayerController>(GetController()))
-        {
-            FHitResult TraceHitResult;
-            PC->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
-            FVector CursorFV = TraceHitResult.ImpactNormal;
-            FRotator CursorR = CursorFV.Rotation();
-            CursorToWorld->SetWorldLocation(TraceHitResult.Location);
-            CursorToWorld->SetWorldRotation(CursorR);
-        }
-    }*/
     if (CurrentCursor)
     {
         APlayerController* myPC = Cast<APlayerController>(GetController());
@@ -112,9 +83,6 @@ void AOnePsychoCharacter::Tick(float DeltaSeconds)
 void AOnePsychoCharacter::BeginPlay()
 {
     Super::BeginPlay();
-
-    //спавн оружия
-    InitWeapon(InitWeaponName);
 
     //спавн курсора
     if (CursorMaterial)
@@ -144,6 +112,11 @@ void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputCom
         TEXT("FireEvent"), EInputEvent::IE_Released, this, &AOnePsychoCharacter::InputAttackReleased);
     NewInputComponent->BindAction(
         TEXT("ReloadEvent"), EInputEvent::IE_Released, this, &AOnePsychoCharacter::TryReloadWeapon);
+
+    NewInputComponent->BindAction(
+        TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwicthNextWeapon);
+    NewInputComponent->BindAction(
+        TEXT("SwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwitchPreviosWeapon);
 }
 
 //функции движения
@@ -337,8 +310,15 @@ AWeaponDefault* AOnePsychoCharacter::GetCurrentWeapon()
 }
 
 //функция спавна оружия
-void AOnePsychoCharacter::InitWeapon(FName IdWeapon)
+void AOnePsychoCharacter::InitWeapon(
+    FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo) // int32 NewCurrentIndexWeapon)
 {
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->Destroy();
+        CurrentWeapon = nullptr;
+    }
+
     UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetGameInstance());
     FWeaponInfo myWeaponInfo;
     if (myGI)
@@ -364,13 +344,19 @@ void AOnePsychoCharacter::InitWeapon(FName IdWeapon)
                     CurrentWeapon = myWeapon;
 
                     myWeapon->WeaponSetting = myWeaponInfo;
-                    myWeapon->WeaponInfo.Round = myWeaponInfo.MaxRound;
-                    // debug
+                    myWeapon->AdditionalWeaponInfo.Round = myWeaponInfo.MaxRound;
+
                     myWeapon->ReloadTime = myWeaponInfo.ReloadTime;
                     myWeapon->UpdateStateWeapon(MovementState);
 
+                    myWeapon->AdditionalWeaponInfo = WeaponAdditionalInfo;
+                    if (CharacterInventoryComponent)
+                        // CurrentIndexWeapon = NewCurrentIndexWeapon;
+                        CurrentIndexWeapon = CharacterInventoryComponent->GetWeaponIndexSlotByName(IdWeapon);
+
                     myWeapon->OnWeaponReloadStart.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadStart);
                     myWeapon->OnWeaponReloadEnd.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadEnd);
+                    myWeapon->OnWeaponFireStart.AddDynamic(this, &AOnePsychoCharacter::WeaponFireStart);
                 }
             }
         }
@@ -407,9 +393,10 @@ void AOnePsychoCharacter::AttackCharEvent(bool bIsFiring)
 
 void AOnePsychoCharacter::TryReloadWeapon()
 {
-    if (CurrentWeapon)
+    if (CurrentWeapon && !CurrentWeapon->WeaponReloading)
     {
-        if (CurrentWeapon->GetWeaponRound() <= CurrentWeapon->WeaponSetting.MaxRound)
+        if (CurrentWeapon->GetWeaponRound() <
+            CurrentWeapon->WeaponSetting.MaxRound) //&& CurrentWeapon->CheckCanWeaponReload())
         {
             CurrentWeapon->InitReload();
         }
@@ -418,6 +405,8 @@ void AOnePsychoCharacter::TryReloadWeapon()
 
 void AOnePsychoCharacter::WeaponFireStart(UAnimMontage* Anim)
 {
+    // if (CharacterInventoryComponent && CurrentWeapon)
+    //  CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
     WeaponFireStart_BP(Anim);
 }
 
@@ -426,13 +415,67 @@ void AOnePsychoCharacter::WeaponReloadStart(UAnimMontage* Anim)
     WeaponReloadStart_BP(Anim);
 }
 
-void AOnePsychoCharacter::WeaponReloadEnd()
+void AOnePsychoCharacter::WeaponReloadEnd(bool bIsSuccess) //, int32 AmmoTake)
 {
-    WeaponReloadEnd_BP();
+    // if (CharacterInventoryComponent && CurrentWeapon)
+    //{
+    //  CharacterInventoryComponent->AmmoSlotChangeValue(CurrentWeapon->WeaponSetting.WeaponType, AmmoTake);
+    // CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
+    //}
+    WeaponReloadEnd_BP(bIsSuccess);
 }
 
 void AOnePsychoCharacter::WeaponFireStart_BP_Implementation(UAnimMontage* Anim) {}
 
 void AOnePsychoCharacter::WeaponReloadStart_BP_Implementation(UAnimMontage* Anim) {}
 
-void AOnePsychoCharacter::WeaponReloadEnd_BP_Implementation() {}
+void AOnePsychoCharacter::WeaponReloadEnd_BP_Implementation(bool bIsSuccess) {}
+
+void AOnePsychoCharacter::TrySwicthNextWeapon()
+{
+    // We have more then one weapon go switch
+    if (CharacterInventoryComponent->WeaponSlots.Num() > 1)
+    {
+        int8 OldIndex = CurrentIndexWeapon;
+        FAdditionalWeaponInfo OldInfo;
+        if (CurrentWeapon)
+        {
+            //записываем инфо текущего оружия
+            OldInfo = CurrentWeapon->AdditionalWeaponInfo;
+            if (CurrentWeapon->WeaponReloading)
+                CurrentWeapon->CancelReload();
+        }
+
+        if (CharacterInventoryComponent)
+        {
+            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon + 1, OldIndex, OldInfo)) // true))
+            {
+            }
+        }
+    }
+}
+
+void AOnePsychoCharacter::TrySwitchPreviosWeapon()
+{
+    // We have more then one weapon go switch
+    if (CharacterInventoryComponent->WeaponSlots.Num() > 1)
+    {
+        int8 OldIndex = CurrentIndexWeapon;
+        FAdditionalWeaponInfo OldInfo;
+        if (CurrentWeapon)
+        {
+            //записываем инфо текущего оружия
+            OldInfo = CurrentWeapon->AdditionalWeaponInfo;
+            if (CurrentWeapon->WeaponReloading)
+                CurrentWeapon->CancelReload();
+        }
+
+        if (CharacterInventoryComponent)
+        {
+            // InventoryComponent->SetAdditionalInfoWeapon(OldIndex, GetCurrentWeapon()->AdditionalWeaponInfo);
+            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo)) // false))
+            {
+            }
+        }
+    }
+}

@@ -32,6 +32,9 @@ public:
     /** Returns CameraBoom subobject **/
     FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+    class UCharacterInventoryComponent* CharacterInventoryComponent;
+
     /** Returns CursorToWorld subobject **/
     // FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
 
@@ -124,7 +127,7 @@ public:
 
     //функция спавна оружия
     UFUNCTION(BlueprintCallable)
-    void InitWeapon(FName IdWeapon);
+    void InitWeapon(FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo); // int32 NewCurrentIndexWeapon);
 
     //функция перезарядки
     UFUNCTION(BlueprintCallable)
@@ -146,12 +149,18 @@ public:
     UFUNCTION()
     void WeaponReloadStart(UAnimMontage* Anim);
     UFUNCTION()
-    void WeaponReloadEnd();
+    void WeaponReloadEnd(bool bIsSuccess); // , int32 AmmoSafe);
 
     UFUNCTION(BlueprintNativeEvent)
     void WeaponFireStart_BP(UAnimMontage* Anim);
     UFUNCTION(BlueprintNativeEvent)
     void WeaponReloadStart_BP(UAnimMontage* Anim);
     UFUNCTION(BlueprintNativeEvent)
-    void WeaponReloadEnd_BP();
+    void WeaponReloadEnd_BP(bool bIsSuccess);
+
+    void TrySwicthNextWeapon();
+    void TrySwitchPreviosWeapon();
+
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+    int32 CurrentIndexWeapon = 0;
 };

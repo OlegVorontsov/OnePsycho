@@ -47,31 +47,14 @@ void AWeaponDefault::Tick(float DeltaTime)
 
 void AWeaponDefault::FireTick(float DeltaTime)
 {
-    //патроны еще есть
-    if (GetWeaponRound() > 0)
+    if (WeaponFiring && GetWeaponRound() > 0 && !WeaponReloading)
     {
-        if (WeaponFiring)
+        if (FireTimer < 0.f)
         {
-            if (FireTimer < 0.f)
-            {
-                if (!WeaponReloading)
-                {
-                    Fire();
-                }
-            }
-            else
-            {
-                FireTimer -= DeltaTime;
-            }
+            Fire();
         }
-    }
-    else
-    {
-        //оружие не перезаряжается
-        if (!WeaponReloading)
-        {
-            InitReload();
-        }
+        else
+            FireTimer -= DeltaTime;
     }
 }
 
@@ -168,6 +151,7 @@ void AWeaponDefault::WeaponInit()
     {
         StaticMeshWeapon->DestroyComponent();
     }
+    UpdateStateWeapon(EMovementState::Run_State);
 }
 
 void AWeaponDefault::SetWeaponStateFire(bool bIsFire)
@@ -182,6 +166,11 @@ void AWeaponDefault::SetWeaponStateFire(bool bIsFire)
 bool AWeaponDefault::CheckWeaponCanFire()
 {
     return !BlockFire;
+}
+
+FProjectileInfo AWeaponDefault::GetProjectile()
+{
+    return WeaponSetting.ProjectileSetting;
 }
 
 void AWeaponDefault::Fire()
@@ -218,18 +207,17 @@ void AWeaponDefault::Fire()
         }
     }
 
-    OnWeaponFireStart.Broadcast(AnimToPlay);
-
     FireTimer = WeaponSetting.RateOfFire;
-    WeaponInfo.Round = WeaponInfo.Round - 1;
+    AdditionalWeaponInfo.Round = AdditionalWeaponInfo.Round - 1;
+    ChangeDispersionByShot();
+
+    OnWeaponFireStart.Broadcast(AnimToPlay);
 
     //звук и эффект выстрела
     UGameplayStatics::SpawnSoundAtLocation(
         GetWorld(), WeaponSetting.SoundFireWeapon, ShootLocation->GetComponentLocation());
     UGameplayStatics::SpawnEmitterAtLocation(
         GetWorld(), WeaponSetting.EffectFireWeapon, ShootLocation->GetComponentTransform());
-
-    ChangeDispersionByShot();
 
     int8 NumberProjectile = GetNumberProjectileByShot();
 
@@ -278,14 +266,32 @@ void AWeaponDefault::Fire()
                 FHitResult Hit;
                 TArray<AActor*> Actors;
 
-                UKismetSystemLibrary::LineTraceSingle(GetWorld(), SpawnLocation,
-                    EndLocation * WeaponSetting.DistanceTrace, ETraceTypeQuery::TraceTypeQuery4, false, Actors,
-                    EDrawDebugTrace::ForDuration, Hit, true, FLinearColor::Red, FLinearColor::Green, 5.0f);
-
+                EDrawDebugTrace::Type DebugTrace;
                 if (ShowDebug)
-                    DrawDebugLine(GetWorld(), SpawnLocation,
-                        SpawnLocation + ShootLocation->GetForwardVector() * WeaponSetting.DistanceTrace, FColor::Black,
-                        false, 5.f, (uint8)'\000', 0.5f);
+                {
+                    DrawDebugLine(GetWorld(),                                                            //
+                        SpawnLocation,                                                                   //
+                        SpawnLocation + ShootLocation->GetForwardVector() * WeaponSetting.DistanceTrace, //
+                        FColor::Black,                                                                   //
+                        false,                                                                           //
+                        5.f,                                                                             //
+                        (uint8)'\000',                                                                   //
+                        0.5f);
+                    DebugTrace = EDrawDebugTrace::ForDuration;
+                }
+                else
+                {
+                    DebugTrace = EDrawDebugTrace::None;
+
+                    UKismetSystemLibrary::LineTraceSingle(GetWorld(), //
+                        SpawnLocation,                                //
+                        EndLocation * WeaponSetting.DistanceTrace,    //
+                        ETraceTypeQuery::TraceTypeQuery4,             //
+                        false,                                        //
+                        Actors,                                       //
+                        DebugTrace,                                   //
+                        Hit, true, FLinearColor::Red, FLinearColor::Green, 5.0f);
+                }
 
                 if (Hit.GetActor() && Hit.PhysMaterial.IsValid())
                 {
@@ -331,11 +337,12 @@ void AWeaponDefault::Fire()
             }
         }
     }
-}
-
-FProjectileInfo AWeaponDefault::GetProjectile()
-{
-    return WeaponSetting.ProjectileSetting;
+    if (GetWeaponRound() <= 0 && !WeaponReloading)
+    {
+        // Init Reload
+        // if (CheckCanWeaponReload())
+        InitReload();
+    }
 }
 
 void AWeaponDefault::UpdateStateWeapon(EMovementState NewMovementState)
@@ -463,7 +470,7 @@ int8 AWeaponDefault::GetNumberProjectileByShot() const
 //функция возвращает кол-во выстрелов
 int32 AWeaponDefault::GetWeaponRound()
 {
-    return WeaponInfo.Round;
+    return AdditionalWeaponInfo.Round;
 }
 
 void AWeaponDefault::InitReload()
@@ -504,9 +511,19 @@ void AWeaponDefault::FinishReload()
 {
     WeaponReloading = false;
 
-    WeaponInfo.Round = WeaponSetting.MaxRound;
+    AdditionalWeaponInfo.Round = WeaponSetting.MaxRound;
 
-    OnWeaponReloadEnd.Broadcast();
+    OnWeaponReloadEnd.Broadcast(true); // 0);
+}
+
+void AWeaponDefault::CancelReload()
+{
+    WeaponReloading = false;
+    if (SkeletalMeshWeapon && SkeletalMeshWeapon->GetAnimInstance())
+        SkeletalMeshWeapon->GetAnimInstance()->StopAllMontages(0.15f);
+
+    OnWeaponReloadEnd.Broadcast(false); // 0);
+    DropClipFlag = false;
 }
 
 void AWeaponDefault::InitDropMesh(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection,

@@ -11,9 +11,9 @@
 
 #include "WeaponDefault.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponFireStart, UAnimMontage*, Anim);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadStart, UAnimMontage*, Anim);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponReloadEnd);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponFireStart, UAnimMontage*, AnimFireChar);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadStart, UAnimMontage*, AnimReloadChar);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadEnd, bool, bIsSuccess); // int32, AmmoSafe);
 
 UCLASS()
 class ONEPSYCHO_API AWeaponDefault : public AActor
@@ -43,7 +43,7 @@ public:
 
     //переменная для дополнительной структуры об оружии
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
-    FAddicionalWeaponInfo WeaponInfo;
+    FAdditionalWeaponInfo AdditionalWeaponInfo;
 
 protected:
     virtual void BeginPlay() override;
@@ -66,6 +66,7 @@ public:
 
     FProjectileInfo GetProjectile();
 
+    UFUNCTION()
     void Fire();
 
     FVector ApplyDispersionToShoot(FVector DirectionShoot) const;
@@ -87,9 +88,6 @@ public:
     //функция возвращает кол-во выстрелов
     UFUNCTION(BlueprintCallable)
     int32 GetWeaponRound();
-
-    void InitReload();
-    void FinishReload();
 
     // flags
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
@@ -119,13 +117,20 @@ public:
     FVector ShootEndLocation = FVector(0);
 
     UFUNCTION()
+    void InitReload();
+    void FinishReload();
+    void CancelReload();
+
+    // bool CheckCanWeaponReload();
+    // int8 GetAviableAmmoForReload();
+
+    UFUNCTION()
     void InitDropMesh(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh,
         float ImpulseRandomDespersion, float PowerImpulse, float CustomMass);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool ShowDebug = false;
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-    // bool byBarrel = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     float SizeVectorToChangeShootDirectionLogic = 100.0f;
 };

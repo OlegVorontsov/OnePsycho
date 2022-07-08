@@ -19,6 +19,16 @@ enum class EMovementState : uint8
     SprintRun_State UMETA(DisplayName = "SprintRun State")
 };
 
+//енам типов оружия
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+    RifleType UMETA(DisplayName = "Rifle"),
+    ShotGunType UMETA(DisplayName = "ShotGun"),
+    SniperRifleType UMETA(DisplayName = "SniperRifle"),
+    LauncherType UMETA(DisplayName = "Launcher")
+};
+
 //структура скоростей движения персонажа
 USTRUCT(BlueprintType)
 struct FCharacterSpeed
@@ -259,17 +269,47 @@ struct FWeaponInfo : public FTableRowBase
     FDropMeshInfo ClipDropMesh;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh ")
     FDropMeshInfo ShellBullets;
+
+    // inv
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory ")
+    float SwitchTimeToWeapon = 1.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory ")
+    UTexture2D* WeaponIcon = nullptr;
 };
 
 //дополнительная структура об оружии
 USTRUCT(BlueprintType)
-struct FAddicionalWeaponInfo
+struct FAdditionalWeaponInfo
 {
     GENERATED_BODY()
 
-    //кол-во выстрелов
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    int32 Round = 10;
+    int32 Round = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponSlot
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponSlot")
+    FName NameItem;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponSlot")
+    FAdditionalWeaponInfo AdditionalInfo;
+};
+
+USTRUCT(BlueprintType)
+struct FAmmoSlot
+{
+    GENERATED_BODY()
+
+    /// Index Slot by Index Array
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AmmoSlot")
+    EWeaponType WeaponType = EWeaponType::RifleType;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AmmoSlot")
+    int32 Cout = 100;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AmmoSlot")
+    int32 MaxCout = 100;
 };
 
 UCLASS()
