@@ -275,6 +275,9 @@ struct FWeaponInfo : public FTableRowBase
     float SwitchTimeToWeapon = 1.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory ")
     UTexture2D* WeaponIcon = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory ")
+    EWeaponType WeaponType = EWeaponType::RifleType;
 };
 
 //дополнительная структура об оружии

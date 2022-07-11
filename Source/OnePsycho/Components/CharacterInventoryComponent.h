@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSwitchWeapon, FName, WeaponIdName, FAdditionalWeaponInfo,
     WeaponAdditionalInfo); // int32, NewCurrentIndexWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChange, EWeaponType, TypeAmmo, int32, Cout);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ONEPSYCHO_API UCharacterInventoryComponent : public UActorComponent
@@ -19,6 +20,8 @@ public:
     UCharacterInventoryComponent();
 
     FOnSwitchWeapon OnSwitchWeapon;
+    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    FOnAmmoChange OnAmmoChange;
 
 protected:
     virtual void BeginPlay() override;
@@ -40,4 +43,6 @@ public:
     int32 GetWeaponIndexSlotByName(FName IdWeaponName);
     FName GetWeaponNameBySlotIndex(int32 indexSlot);
     void SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeaponInfo NewInfo);
+
+    void WeaponChangeAmmo(EWeaponType TypeWeapon, int32 AmmoTaken);
 };

@@ -74,7 +74,7 @@ bool UCharacterInventoryComponent::SwitchWeaponToIndex(
     {
         if (i == CorrectIndex)
         {
-            if (WeaponSlots[i].NameItem.IsNone())
+            if (!WeaponSlots[i].NameItem.IsNone())
             {
                 NewIdWeapon = WeaponSlots[i].NameItem;
                 NewAdditionalInfo = WeaponSlots[i].AdditionalInfo;
@@ -168,4 +168,24 @@ void UCharacterInventoryComponent::SetAdditionalInfoWeapon(int32 IndexWeapon, FA
     else
         UE_LOG(LogTemp, Warning,
             TEXT("UCharacterInventoryComponent::SetAdditionalInfoWeapon - Not Correct index Weapon - %d"), IndexWeapon);
+}
+
+void UCharacterInventoryComponent::WeaponChangeAmmo(EWeaponType TypeWeapon, int32 AmmoTaken)
+{
+    bool bIsFind = false;
+    int8 i = 0;
+    while (i < AmmoSlots.Num() && !bIsFind)
+    {
+        if (AmmoSlots[i].WeaponType == TypeWeapon)
+        {
+            AmmoSlots[i].Cout += AmmoTaken;
+            if (AmmoSlots[i].Cout > AmmoSlots[i].MaxCout)
+                AmmoSlots[i].Cout = AmmoSlots[i].MaxCout;
+
+            OnAmmoChange.Broadcast(AmmoSlots[i].WeaponType, AmmoSlots[i].Cout);
+
+            bIsFind = true;
+        }
+        i++;
+    }
 }

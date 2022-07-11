@@ -415,13 +415,14 @@ void AOnePsychoCharacter::WeaponReloadStart(UAnimMontage* Anim)
     WeaponReloadStart_BP(Anim);
 }
 
-void AOnePsychoCharacter::WeaponReloadEnd(bool bIsSuccess) //, int32 AmmoTake)
+void AOnePsychoCharacter::WeaponReloadEnd(bool bIsSuccess, int32 AmmoTake)
 {
-    // if (CharacterInventoryComponent && CurrentWeapon)
-    //{
-    //  CharacterInventoryComponent->AmmoSlotChangeValue(CurrentWeapon->WeaponSetting.WeaponType, AmmoTake);
-    // CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
-    //}
+    if (CharacterInventoryComponent && CurrentWeapon)
+    {
+        CharacterInventoryComponent->WeaponChangeAmmo(CurrentWeapon->WeaponSetting.WeaponType, AmmoTake);
+        // CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon,
+        // CurrentWeapon->AdditionalWeaponInfo);
+    }
     WeaponReloadEnd_BP(bIsSuccess);
 }
 

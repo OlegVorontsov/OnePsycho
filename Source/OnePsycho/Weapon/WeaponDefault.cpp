@@ -511,9 +511,13 @@ void AWeaponDefault::FinishReload()
 {
     WeaponReloading = false;
 
+    //сохраняем сколько было патронов в оружии до перезарядки
+    int32 AmmoNeedTake = AdditionalWeaponInfo.Round;
+    AmmoNeedTake = AmmoNeedTake - WeaponSetting.MaxRound;
+
     AdditionalWeaponInfo.Round = WeaponSetting.MaxRound;
 
-    OnWeaponReloadEnd.Broadcast(true); // 0);
+    OnWeaponReloadEnd.Broadcast(true, AmmoNeedTake);
 }
 
 void AWeaponDefault::CancelReload()
@@ -522,7 +526,7 @@ void AWeaponDefault::CancelReload()
     if (SkeletalMeshWeapon && SkeletalMeshWeapon->GetAnimInstance())
         SkeletalMeshWeapon->GetAnimInstance()->StopAllMontages(0.15f);
 
-    OnWeaponReloadEnd.Broadcast(false); // 0);
+    OnWeaponReloadEnd.Broadcast(false, 0);
     DropClipFlag = false;
 }
 

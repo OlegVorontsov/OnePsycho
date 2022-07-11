@@ -149,7 +149,7 @@ public:
     UFUNCTION()
     void WeaponReloadStart(UAnimMontage* Anim);
     UFUNCTION()
-    void WeaponReloadEnd(bool bIsSuccess); // , int32 AmmoSafe);
+    void WeaponReloadEnd(bool bIsSuccess, int32 AmmoSafe);
 
     UFUNCTION(BlueprintNativeEvent)
     void WeaponFireStart_BP(UAnimMontage* Anim);
