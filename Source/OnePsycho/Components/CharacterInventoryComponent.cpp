@@ -55,7 +55,7 @@ void UCharacterInventoryComponent::TickComponent(
 
 //смена оружия по индексу
 bool UCharacterInventoryComponent::SwitchWeaponToIndex(
-    int32 ChangeToIndex, int32 OldIndex, FAdditionalWeaponInfo OldInfo) // bool bIsForward)
+    int32 ChangeToIndex, int32 OldIndex, FAdditionalWeaponInfo OldInfo, bool bIsForward)
 {
     bool bIsSuccess = false;
     int8 CorrectIndex = ChangeToIndex;
@@ -68,29 +68,333 @@ bool UCharacterInventoryComponent::SwitchWeaponToIndex(
 
     FName NewIdWeapon;
     FAdditionalWeaponInfo NewAdditionalInfo;
+    int32 NewCurrentIndex = 0;
 
-    int8 i = 0;
-    while (i < WeaponSlots.Num() && !bIsSuccess)
+    if (WeaponSlots.IsValidIndex(CorrectIndex))
     {
-        if (i == CorrectIndex)
+        if (!WeaponSlots[CorrectIndex].NameItem.IsNone())
         {
-            if (!WeaponSlots[i].NameItem.IsNone())
+            if (WeaponSlots[CorrectIndex].AdditionalInfo.Round > 0)
             {
-                NewIdWeapon = WeaponSlots[i].NameItem;
-                NewAdditionalInfo = WeaponSlots[i].AdditionalInfo;
+                // good weapon have ammo start change
                 bIsSuccess = true;
             }
+            else
+            {
+                UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+                if (myGI)
+                {
+                    //пробегаемся по слотам с боеприпасами
+                    FWeaponInfo myInfo;
+                    myGI->GetWeaponInfoByName(WeaponSlots[CorrectIndex].NameItem, myInfo);
+
+                    bool bIsFind = false;
+                    int8 j = 0;
+                    while (j < AmmoSlots.Num() && !bIsFind)
+                    {
+                        if (AmmoSlots[j].WeaponType == myInfo.WeaponType && AmmoSlots[j].Cout > 0)
+                        {
+                            // good weapon have ammo start change
+                            bIsSuccess = true;
+                            bIsFind = true;
+                        }
+                        j++;
+                    }
+                }
+            }
+            if (bIsSuccess)
+            {
+                NewCurrentIndex = CorrectIndex;
+                NewIdWeapon = WeaponSlots[CorrectIndex].NameItem;
+                NewAdditionalInfo = WeaponSlots[CorrectIndex].AdditionalInfo;
+            }
         }
-        i++;
     }
+
+    //для оружия нет патронов в арсенале
     if (!bIsSuccess)
     {
+        if (bIsForward)
+        {
+            int8 iteration = 0;
+            int8 Seconditeration = 0;
+            //проходимся по слотам
+            while (iteration < WeaponSlots.Num() && !bIsSuccess)
+            {
+                iteration++;
+                int8 tmpIndex = ChangeToIndex + iteration;
+                if (WeaponSlots.IsValidIndex(tmpIndex))
+                {
+                    if (!WeaponSlots[tmpIndex].NameItem.IsNone())
+                    {
+                        if (WeaponSlots[tmpIndex].AdditionalInfo.Round > 0)
+                        {
+                            // WeaponGood - есть патроны в оружии
+                            bIsSuccess = true;
+                            NewIdWeapon = WeaponSlots[tmpIndex].NameItem;
+                            NewAdditionalInfo = WeaponSlots[tmpIndex].AdditionalInfo;
+                            NewCurrentIndex = tmpIndex;
+                        }
+                        else
+                        {
+                            FWeaponInfo myInfo;
+                            UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+
+                            myGI->GetWeaponInfoByName(WeaponSlots[tmpIndex].NameItem, myInfo);
+
+                            bool bIsFind = false;
+                            int8 j = 0;
+                            while (j < AmmoSlots.Num() && !bIsFind)
+                            {
+                                if (AmmoSlots[j].WeaponType == myInfo.WeaponType && AmmoSlots[j].Cout > 0)
+                                {
+                                    // WeaponGood - есть патроны в инвентаре
+                                    bIsSuccess = true;
+                                    NewIdWeapon = WeaponSlots[tmpIndex].NameItem;
+                                    NewAdditionalInfo = WeaponSlots[tmpIndex].AdditionalInfo;
+                                    NewCurrentIndex = tmpIndex;
+                                    bIsFind = true;
+                                }
+                                j++;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // go to end of right of array weapon slots
+                    if (OldIndex != Seconditeration)
+                    {
+                        if (WeaponSlots.IsValidIndex(Seconditeration))
+                        {
+                            if (!WeaponSlots[Seconditeration].NameItem.IsNone())
+                            {
+                                if (WeaponSlots[Seconditeration].AdditionalInfo.Round > 0)
+                                {
+                                    // WeaponGood
+                                    bIsSuccess = true;
+                                    NewIdWeapon = WeaponSlots[Seconditeration].NameItem;
+                                    NewAdditionalInfo = WeaponSlots[Seconditeration].AdditionalInfo;
+                                    NewCurrentIndex = Seconditeration;
+                                }
+                                else
+                                {
+                                    FWeaponInfo myInfo;
+                                    UOnePsychoGameInstance* myGI =
+                                        Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+
+                                    myGI->GetWeaponInfoByName(WeaponSlots[Seconditeration].NameItem, myInfo);
+
+                                    bool bIsFind = false;
+                                    int8 j = 0;
+                                    while (j < AmmoSlots.Num() && !bIsFind)
+                                    {
+                                        if (AmmoSlots[j].WeaponType == myInfo.WeaponType && AmmoSlots[j].Cout > 0)
+                                        {
+                                            // WeaponGood
+                                            bIsSuccess = true;
+                                            NewIdWeapon = WeaponSlots[Seconditeration].NameItem;
+                                            NewAdditionalInfo = WeaponSlots[Seconditeration].AdditionalInfo;
+                                            NewCurrentIndex = Seconditeration;
+                                            bIsFind = true;
+                                        }
+                                        j++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // go to same weapon when start
+                        if (WeaponSlots.IsValidIndex(Seconditeration))
+                        {
+                            if (!WeaponSlots[Seconditeration].NameItem.IsNone())
+                            {
+                                if (WeaponSlots[Seconditeration].AdditionalInfo.Round > 0)
+                                {
+                                    // WeaponGood - есть патроны, it same weapon do nothing
+                                }
+                                else
+                                {
+                                    FWeaponInfo myInfo;
+                                    UOnePsychoGameInstance* myGI =
+                                        Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+
+                                    myGI->GetWeaponInfoByName(WeaponSlots[Seconditeration].NameItem, myInfo);
+
+                                    bool bIsFind = false;
+                                    int8 j = 0;
+                                    while (j < AmmoSlots.Num() && !bIsFind)
+                                    {
+                                        if (AmmoSlots[j].WeaponType == myInfo.WeaponType)
+                                        {
+                                            if (AmmoSlots[j].Cout > 0)
+                                            {
+                                                // WeaponGood, it same weapon do nothing
+                                            }
+                                            else
+                                            {
+                                                // Not find weapon with amm need init Pistol with infinity ammo
+                                                UE_LOG(LogTemp, Error,
+                                                    TEXT("UTPSInventoryComponent::SwitchWeaponToIndex - Init PISTOL - "
+                                                         "NEED"));
+                                            }
+                                        }
+                                        j++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Seconditeration++;
+                }
+            }
+        }
+        //идем с другой стороны массива
+        else
+        {
+            int8 iteration = 0;
+            int8 Seconditeration = WeaponSlots.Num() - 1;
+            while (iteration < WeaponSlots.Num() && !bIsSuccess)
+            {
+                iteration++;
+                int8 tmpIndex = ChangeToIndex - iteration;
+                if (WeaponSlots.IsValidIndex(tmpIndex))
+                {
+                    if (!WeaponSlots[tmpIndex].NameItem.IsNone())
+                    {
+                        if (WeaponSlots[tmpIndex].AdditionalInfo.Round > 0)
+                        {
+                            // WeaponGood
+                            bIsSuccess = true;
+                            NewIdWeapon = WeaponSlots[tmpIndex].NameItem;
+                            NewAdditionalInfo = WeaponSlots[tmpIndex].AdditionalInfo;
+                            NewCurrentIndex = tmpIndex;
+                        }
+                        else
+                        {
+                            FWeaponInfo myInfo;
+                            UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+
+                            myGI->GetWeaponInfoByName(WeaponSlots[tmpIndex].NameItem, myInfo);
+
+                            bool bIsFind = false;
+                            int8 j = 0;
+                            while (j < AmmoSlots.Num() && !bIsFind)
+                            {
+                                if (AmmoSlots[j].WeaponType == myInfo.WeaponType && AmmoSlots[j].Cout > 0)
+                                {
+                                    // WeaponGood
+                                    bIsSuccess = true;
+                                    NewIdWeapon = WeaponSlots[tmpIndex].NameItem;
+                                    NewAdditionalInfo = WeaponSlots[tmpIndex].AdditionalInfo;
+                                    NewCurrentIndex = tmpIndex;
+                                    bIsFind = true;
+                                }
+                                j++;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // go to end of LEFT of array weapon slots
+                    if (OldIndex != Seconditeration)
+                    {
+                        if (WeaponSlots.IsValidIndex(Seconditeration))
+                        {
+                            if (!WeaponSlots[Seconditeration].NameItem.IsNone())
+                            {
+                                if (WeaponSlots[Seconditeration].AdditionalInfo.Round > 0)
+                                {
+                                    // WeaponGood
+                                    bIsSuccess = true;
+                                    NewIdWeapon = WeaponSlots[Seconditeration].NameItem;
+                                    NewAdditionalInfo = WeaponSlots[Seconditeration].AdditionalInfo;
+                                    NewCurrentIndex = Seconditeration;
+                                }
+                                else
+                                {
+                                    FWeaponInfo myInfo;
+                                    UOnePsychoGameInstance* myGI =
+                                        Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+
+                                    myGI->GetWeaponInfoByName(WeaponSlots[Seconditeration].NameItem, myInfo);
+
+                                    bool bIsFind = false;
+                                    int8 j = 0;
+                                    while (j < AmmoSlots.Num() && !bIsFind)
+                                    {
+                                        if (AmmoSlots[j].WeaponType == myInfo.WeaponType && AmmoSlots[j].Cout > 0)
+                                        {
+                                            // WeaponGood
+                                            bIsSuccess = true;
+                                            NewIdWeapon = WeaponSlots[Seconditeration].NameItem;
+                                            NewAdditionalInfo = WeaponSlots[Seconditeration].AdditionalInfo;
+                                            NewCurrentIndex = Seconditeration;
+                                            bIsFind = true;
+                                        }
+                                        j++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // go to same weapon when start
+                        if (WeaponSlots.IsValidIndex(Seconditeration))
+                        {
+                            if (!WeaponSlots[Seconditeration].NameItem.IsNone())
+                            {
+                                if (WeaponSlots[Seconditeration].AdditionalInfo.Round > 0)
+                                {
+                                    // WeaponGood, it same weapon do nothing
+                                }
+                                else
+                                {
+                                    FWeaponInfo myInfo;
+                                    UOnePsychoGameInstance* myGI =
+                                        Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+
+                                    myGI->GetWeaponInfoByName(WeaponSlots[Seconditeration].NameItem, myInfo);
+
+                                    bool bIsFind = false;
+                                    int8 j = 0;
+                                    while (j < AmmoSlots.Num() && !bIsFind)
+                                    {
+                                        if (AmmoSlots[j].WeaponType == myInfo.WeaponType)
+                                        {
+                                            if (AmmoSlots[j].Cout > 0)
+                                            {
+                                                // WeaponGood, it same weapon do nothing
+                                            }
+                                            else
+                                            {
+                                                // Not find weapon with amm need init Pistol with infinity ammo
+                                                UE_LOG(LogTemp, Error,
+                                                    TEXT("UTPSInventoryComponent::SwitchWeaponToIndex - Init PISTOL - "
+                                                         "NEED"));
+                                            }
+                                        }
+                                        j++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Seconditeration--;
+                }
+            }
+        }
     }
+
     if (bIsSuccess)
     {
-        //сохраняем данные которые меняем
         SetAdditionalInfoWeapon(OldIndex, OldInfo);
-        OnSwitchWeapon.Broadcast(NewIdWeapon, NewAdditionalInfo);
+        OnSwitchWeapon.Broadcast(NewIdWeapon, NewAdditionalInfo); // NewCurrentIndex);
+        // OnWeaponAmmoAviable.Broadcast();
     }
     return bIsSuccess;
 }
@@ -156,7 +460,7 @@ void UCharacterInventoryComponent::SetAdditionalInfoWeapon(int32 IndexWeapon, FA
                 WeaponSlots[i].AdditionalInfo = NewInfo;
                 bIsFind = true;
 
-                // OnWeaponAdditionalInfoChange.Broadcast(IndexWeapon, NewInfo);
+                OnWeaponAdditionalInfoChange.Broadcast(IndexWeapon, NewInfo);
             }
             i++;
         }
@@ -170,7 +474,7 @@ void UCharacterInventoryComponent::SetAdditionalInfoWeapon(int32 IndexWeapon, FA
             TEXT("UCharacterInventoryComponent::SetAdditionalInfoWeapon - Not Correct index Weapon - %d"), IndexWeapon);
 }
 
-void UCharacterInventoryComponent::WeaponChangeAmmo(EWeaponType TypeWeapon, int32 AmmoTaken)
+void UCharacterInventoryComponent::AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 AmmoTaken)
 {
     bool bIsFind = false;
     int8 i = 0;
@@ -178,7 +482,7 @@ void UCharacterInventoryComponent::WeaponChangeAmmo(EWeaponType TypeWeapon, int3
     {
         if (AmmoSlots[i].WeaponType == TypeWeapon)
         {
-            AmmoSlots[i].Cout += AmmoTaken;
+            AmmoSlots[i].Cout -= AmmoTaken;
             if (AmmoSlots[i].Cout > AmmoSlots[i].MaxCout)
                 AmmoSlots[i].Cout = AmmoSlots[i].MaxCout;
 
@@ -188,4 +492,30 @@ void UCharacterInventoryComponent::WeaponChangeAmmo(EWeaponType TypeWeapon, int3
         }
         i++;
     }
+}
+
+bool UCharacterInventoryComponent::CheckAmmoForWeapon(EWeaponType TypeWeapon, int8& AviableAmmoForWeapon)
+{
+    AviableAmmoForWeapon = 0;
+    bool bIsFind = false;
+    int8 i = 0;
+    while (i < AmmoSlots.Num() && !bIsFind)
+    {
+        if (AmmoSlots[i].WeaponType == TypeWeapon)
+        {
+            bIsFind = true;
+            AviableAmmoForWeapon = AmmoSlots[i].Cout;
+            if (AmmoSlots[i].Cout > 0)
+            {
+                // remove not here, only when pickUp ammo this type, or swithc weapon
+                OnWeaponAmmoAviable.Broadcast(TypeWeapon);
+                return true;
+            }
+        }
+        i++;
+    }
+    //патроны закончились
+    OnWeaponAmmoEmpty.Broadcast(TypeWeapon);
+
+    return false;
 }

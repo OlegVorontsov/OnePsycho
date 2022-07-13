@@ -5,6 +5,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/StaticMeshActor.h"
+#include "CharacterInventoryComponent.h"
 
 AWeaponDefault::AWeaponDefault()
 {
@@ -151,7 +152,7 @@ void AWeaponDefault::WeaponInit()
     {
         StaticMeshWeapon->DestroyComponent();
     }
-    UpdateStateWeapon(EMovementState::Run_State);
+    UpdateStateWeapon(EMovementState::Walk_State);
 }
 
 void AWeaponDefault::SetWeaponStateFire(bool bIsFire)
@@ -208,6 +209,7 @@ void AWeaponDefault::Fire()
     }
 
     FireTimer = WeaponSetting.RateOfFire;
+    //посчет сколько патронов потрачено
     AdditionalWeaponInfo.Round = AdditionalWeaponInfo.Round - 1;
     ChangeDispersionByShot();
 
@@ -221,6 +223,7 @@ void AWeaponDefault::Fire()
 
     int8 NumberProjectile = GetNumberProjectileByShot();
 
+    //стрельбы пулей или трейсом
     if (ShootLocation)
     {
         FVector SpawnLocation = ShootLocation->GetComponentLocation();
@@ -337,11 +340,12 @@ void AWeaponDefault::Fire()
             }
         }
     }
+
     if (GetWeaponRound() <= 0 && !WeaponReloading)
     {
         // Init Reload
-        // if (CheckCanWeaponReload())
-        InitReload();
+        if (CheckCanWeaponReload())
+            InitReload();
     }
 }
 
@@ -353,35 +357,35 @@ void AWeaponDefault::UpdateStateWeapon(EMovementState NewMovementState)
     switch (NewMovementState)
     {
     case EMovementState::Aim_State:
-
+        WeaponAiming = true;
         CurrentDispersionMax = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimMax;
         CurrentDispersionMin = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimMin;
         CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimRecoil;
         CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
         break;
     case EMovementState::AimWalk_State:
-
+        WeaponAiming = true;
         CurrentDispersionMax = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimMax;
         CurrentDispersionMin = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimMin;
         CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimRecoil;
         CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
         break;
     case EMovementState::Walk_State:
-
+        WeaponAiming = false;
         CurrentDispersionMax = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimMax;
         CurrentDispersionMin = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimMin;
         CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimRecoil;
         CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
         break;
     case EMovementState::Run_State:
-
+        WeaponAiming = false;
         CurrentDispersionMax = WeaponSetting.DispersionWeapon.Run_StateDispersionAimMax;
         CurrentDispersionMin = WeaponSetting.DispersionWeapon.Run_StateDispersionAimMin;
         CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Run_StateDispersionAimRecoil;
         CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
         break;
     case EMovementState::SprintRun_State:
-
+        WeaponAiming = false;
         BlockFire = true;
         SetWeaponStateFire(false); // set fire trigger to false
         // Block Fire
@@ -511,13 +515,24 @@ void AWeaponDefault::FinishReload()
 {
     WeaponReloading = false;
 
-    //сохраняем сколько было патронов в оружии до перезарядки
-    int32 AmmoNeedTake = AdditionalWeaponInfo.Round;
-    AmmoNeedTake = AmmoNeedTake - WeaponSetting.MaxRound;
+    //берем доступное кол-во патронов из инвентаря
+    //если инвентаря нет возьмется мах кол-во
+    int8 AviableAmmoFromInventory = GetAviableAmmoForReload();
+    int8 AmmoNeedTakeFromInv;
+    int8 NeedToReload = WeaponSetting.MaxRound - AdditionalWeaponInfo.Round;
 
-    AdditionalWeaponInfo.Round = WeaponSetting.MaxRound;
+    if (NeedToReload > AviableAmmoFromInventory)
+    {
+        AdditionalWeaponInfo.Round = AviableAmmoFromInventory;
+        AmmoNeedTakeFromInv = AviableAmmoFromInventory;
+    }
+    else
+    {
+        AdditionalWeaponInfo.Round += NeedToReload;
+        AmmoNeedTakeFromInv = NeedToReload;
+    }
 
-    OnWeaponReloadEnd.Broadcast(true, AmmoNeedTake);
+    OnWeaponReloadEnd.Broadcast(true, AmmoNeedTakeFromInv);
 }
 
 void AWeaponDefault::CancelReload()
@@ -528,6 +543,44 @@ void AWeaponDefault::CancelReload()
 
     OnWeaponReloadEnd.Broadcast(false, 0);
     DropClipFlag = false;
+}
+
+//функция проверки - остались ли патроны
+bool AWeaponDefault::CheckCanWeaponReload()
+{
+    bool result = true;
+    if (GetOwner())
+    {
+        UCharacterInventoryComponent* MuInv = Cast<UCharacterInventoryComponent>(
+            GetOwner()->GetComponentByClass(UCharacterInventoryComponent::StaticClass()));
+        if (MuInv)
+        {
+            int8 AviableAmmoForWeapon;
+            if (!MuInv->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
+            {
+                result = false;
+            }
+        }
+    }
+    return result;
+}
+
+int8 AWeaponDefault::GetAviableAmmoForReload()
+{
+    int8 AviableAmmoForWeapon = WeaponSetting.MaxRound;
+    if (GetOwner())
+    {
+        UCharacterInventoryComponent* MuInv = Cast<UCharacterInventoryComponent>(
+            GetOwner()->GetComponentByClass(UCharacterInventoryComponent::StaticClass()));
+        if (MuInv)
+        {
+            if (MuInv->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
+            {
+                AviableAmmoForWeapon = AviableAmmoForWeapon;
+            }
+        }
+    }
+    return AviableAmmoForWeapon;
 }
 
 void AWeaponDefault::InitDropMesh(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection,

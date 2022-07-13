@@ -332,7 +332,7 @@ void AOnePsychoCharacter::InitWeapon(
 
                 FActorSpawnParameters SpawnParams;
                 SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-                SpawnParams.Owner = GetOwner();
+                SpawnParams.Owner = this;
                 SpawnParams.Instigator = GetInstigator();
 
                 AWeaponDefault* myWeapon = Cast<AWeaponDefault>(
@@ -357,6 +357,13 @@ void AOnePsychoCharacter::InitWeapon(
                     myWeapon->OnWeaponReloadStart.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadStart);
                     myWeapon->OnWeaponReloadEnd.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadEnd);
                     myWeapon->OnWeaponFireStart.AddDynamic(this, &AOnePsychoCharacter::WeaponFireStart);
+
+                    // after swtch try reload if needed
+                    if (CurrentWeapon->GetWeaponRound() <= 0 && CurrentWeapon->CheckCanWeaponReload())
+                        CurrentWeapon->InitReload();
+
+                    if (CharacterInventoryComponent)
+                        CharacterInventoryComponent->OnWeaponAmmoAviable.Broadcast(myWeapon->WeaponSetting.WeaponType);
                 }
             }
         }
@@ -395,8 +402,8 @@ void AOnePsychoCharacter::TryReloadWeapon()
 {
     if (CurrentWeapon && !CurrentWeapon->WeaponReloading)
     {
-        if (CurrentWeapon->GetWeaponRound() <
-            CurrentWeapon->WeaponSetting.MaxRound) //&& CurrentWeapon->CheckCanWeaponReload())
+        if (CurrentWeapon->GetWeaponRound() < CurrentWeapon->WeaponSetting.MaxRound &&
+            CurrentWeapon->CheckCanWeaponReload())
         {
             CurrentWeapon->InitReload();
         }
@@ -405,8 +412,9 @@ void AOnePsychoCharacter::TryReloadWeapon()
 
 void AOnePsychoCharacter::WeaponFireStart(UAnimMontage* Anim)
 {
-    // if (CharacterInventoryComponent && CurrentWeapon)
-    //  CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
+    if (CharacterInventoryComponent && CurrentWeapon)
+        CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
+
     WeaponFireStart_BP(Anim);
 }
 
@@ -419,9 +427,8 @@ void AOnePsychoCharacter::WeaponReloadEnd(bool bIsSuccess, int32 AmmoTake)
 {
     if (CharacterInventoryComponent && CurrentWeapon)
     {
-        CharacterInventoryComponent->WeaponChangeAmmo(CurrentWeapon->WeaponSetting.WeaponType, AmmoTake);
-        // CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon,
-        // CurrentWeapon->AdditionalWeaponInfo);
+        CharacterInventoryComponent->AmmoSlotChangeValue(CurrentWeapon->WeaponSetting.WeaponType, AmmoTake);
+        CharacterInventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
     }
     WeaponReloadEnd_BP(bIsSuccess);
 }
@@ -449,7 +456,7 @@ void AOnePsychoCharacter::TrySwicthNextWeapon()
 
         if (CharacterInventoryComponent)
         {
-            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon + 1, OldIndex, OldInfo)) // true))
+            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon + 1, OldIndex, OldInfo, true))
             {
             }
         }
@@ -474,7 +481,7 @@ void AOnePsychoCharacter::TrySwitchPreviosWeapon()
         if (CharacterInventoryComponent)
         {
             // InventoryComponent->SetAdditionalInfoWeapon(OldIndex, GetCurrentWeapon()->AdditionalWeaponInfo);
-            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo)) // false))
+            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo, false))
             {
             }
         }

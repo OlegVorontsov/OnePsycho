@@ -121,8 +121,8 @@ public:
     void FinishReload();
     void CancelReload();
 
-    // bool CheckCanWeaponReload();
-    // int8 GetAviableAmmoForReload();
+    bool CheckCanWeaponReload();
+    int8 GetAviableAmmoForReload();
 
     UFUNCTION()
     void InitDropMesh(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh,
