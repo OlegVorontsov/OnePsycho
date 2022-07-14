@@ -152,7 +152,7 @@ void AWeaponDefault::WeaponInit()
     {
         StaticMeshWeapon->DestroyComponent();
     }
-    UpdateStateWeapon(EMovementState::Walk_State);
+    UpdateStateWeapon(EMovementState::Run_State);
 }
 
 void AWeaponDefault::SetWeaponStateFire(bool bIsFire)

@@ -65,7 +65,7 @@ public:
 
     //движение
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    EMovementState MovementState = EMovementState::Walk_State;
+    EMovementState MovementState = EMovementState::Run_State;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FCharacterSpeed MovementSpeedInfo;
