@@ -133,6 +133,13 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
     AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
     AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
+    //проверка двигается ли персонаж
+    if (AxisX != 0 || AxisY != 0)
+        CharMoving = true;
+    else
+        CharMoving = false;
+    ChangeMovementState();
+
     //записываем в переменную поворот персонажа вокруг оси Z
     float ActualRotationYaw = GetActorRotation().Yaw;
 
@@ -220,12 +227,12 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
             MovementState = EMovementState::Run_State;
             CharacterUpdate();
         }
-
-        if (SprintRunStamina < MovementSpeedInfo.SprintRunSpeedRun)
+        //если выносливость < скорости спринта
+        /*if (SprintRunStamina < MovementSpeedInfo.SprintRunSpeedRun)
         {
             ResSpeed = SprintRunStamina;
             GetCharacterMovement()->MaxWalkSpeed = ResSpeed;
-        }
+        }*/
     }
     //восстанавливаем выносливость
     else
@@ -277,21 +284,25 @@ void AOnePsychoCharacter::ChangeMovementState()
     }
     else
     {
-        if (WalkEnabled && AimEnabled)
+        if (WalkEnabled && AimEnabled && CharMoving)
         {
             MovementState = EMovementState::AimWalk_State;
         }
-        else if (WalkEnabled && !AimEnabled)
+        else if (WalkEnabled && !AimEnabled && CharMoving)
         {
             MovementState = EMovementState::Walk_State;
         }
-        else if (!WalkEnabled && AimEnabled)
+        else if (!WalkEnabled && AimEnabled && CharMoving)
         {
             MovementState = EMovementState::Aim_State;
         }
-        else if (!WalkEnabled && !AimEnabled)
+        else if (!WalkEnabled && !AimEnabled && CharMoving)
         {
             MovementState = EMovementState::Run_State;
+        }
+        else if (!WalkEnabled && !AimEnabled && !CharMoving)
+        {
+            MovementState = EMovementState::Aim_State;
         }
     }
     CharacterUpdate();

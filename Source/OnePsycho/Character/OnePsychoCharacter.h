@@ -65,7 +65,7 @@ public:
 
     //движение
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    EMovementState MovementState = EMovementState::Run_State;
+    EMovementState MovementState = EMovementState::Aim_State;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FCharacterSpeed MovementSpeedInfo;
@@ -77,15 +77,17 @@ public:
     bool WalkEnabled = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool AimEnabled = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    bool CharMoving = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationChangeStep = 5;
 
     //переменные для реализации выносливости
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float StaminaStepDown = 0.5;
+    float StaminaStepDown = 2.5;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float StaminaStepUp = 0.5;
+    float StaminaStepUp = 2.5;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float BufferSprintRunStamina = 200;
 
