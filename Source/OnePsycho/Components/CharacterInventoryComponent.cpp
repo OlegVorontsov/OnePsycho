@@ -8,7 +8,7 @@ UCharacterInventoryComponent::UCharacterInventoryComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-//удаление слотов с невалидным оружие и назначение оружия в слот 0
+//удаление слотов с невалидным оружием и назначение оружия в слот 0
 void UCharacterInventoryComponent::BeginPlay()
 {
     Super::BeginPlay();
@@ -30,8 +30,8 @@ void UCharacterInventoryComponent::BeginPlay()
                 else
                 {
                     //удаляем слот
-                    WeaponSlots.RemoveAt(i);
-                    i--;
+                    // WeaponSlots.RemoveAt(i);
+                    // i--;
                 }
             }
         }
@@ -474,7 +474,8 @@ void UCharacterInventoryComponent::SetAdditionalInfoWeapon(int32 IndexWeapon, FA
             TEXT("UCharacterInventoryComponent::SetAdditionalInfoWeapon - Not Correct index Weapon - %d"), IndexWeapon);
 }
 
-void UCharacterInventoryComponent::AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 AmmoTaken)
+//добавление патронов в слот с патронами
+void UCharacterInventoryComponent::AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChangeAmmo)
 {
     bool bIsFind = false;
     int8 i = 0;
@@ -482,7 +483,7 @@ void UCharacterInventoryComponent::AmmoSlotChangeValue(EWeaponType TypeWeapon, i
     {
         if (AmmoSlots[i].WeaponType == TypeWeapon)
         {
-            AmmoSlots[i].Cout -= AmmoTaken;
+            AmmoSlots[i].Cout += CoutChangeAmmo;
             if (AmmoSlots[i].Cout > AmmoSlots[i].MaxCout)
                 AmmoSlots[i].Cout = AmmoSlots[i].MaxCout;
 
@@ -517,5 +518,54 @@ bool UCharacterInventoryComponent::CheckAmmoForWeapon(EWeaponType TypeWeapon, in
     //патроны закончились
     OnWeaponAmmoEmpty.Broadcast(TypeWeapon);
 
+    return false;
+}
+
+bool UCharacterInventoryComponent::CheckCanTakeAmmo(EWeaponType AmmoType)
+{
+    bool result = false;
+    int8 i = 0;
+    while (i < AmmoSlots.Num() && !result)
+    {
+        if (AmmoSlots[i].WeaponType == AmmoType && AmmoSlots[i].Cout < AmmoSlots[i].MaxCout)
+            result = true;
+        i++;
+    }
+    return true;
+}
+
+//функция поиска пустого слота с оружием
+bool UCharacterInventoryComponent::CheckCanTakeWeapon(int32& FreeSlot)
+{
+    bool bIsFreeSlot = false;
+    int8 i = 0;
+    while (i < WeaponSlots.Num() && !bIsFreeSlot)
+    {
+        if (WeaponSlots[i].NameItem.IsNone())
+        {
+            bIsFreeSlot = true;
+            //сохраняем пустой слот
+            FreeSlot = i;
+        }
+        i++;
+    }
+    return bIsFreeSlot;
+}
+
+void UCharacterInventoryComponent::SwitchWeaponToInventory() {}
+
+//функция пикапа оружтя в пустой слот оружия
+bool UCharacterInventoryComponent::TryGetWeaponToInventory(FWeaponSlot NewWeapon)
+{
+    int32 indexSlot = -1;
+    if (CheckCanTakeWeapon(indexSlot))
+    {
+        if (WeaponSlots.IsValidIndex(indexSlot))
+        {
+            WeaponSlots[indexSlot] = NewWeapon;
+            OnUpdateWeaponSlots.Broadcast(WeaponSlots);
+            return true;
+        }
+    }
     return false;
 }

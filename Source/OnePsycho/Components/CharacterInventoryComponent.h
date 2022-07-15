@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
     FOnWeaponAdditionalInfoChange, int32, IndexSlot, FAdditionalWeaponInfo, AdditionalInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoEmpty, EWeaponType, WeaponType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoAviable, EWeaponType, WeaponType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateWeaponSlots, TArray<FWeaponSlot>, WeaponSlotsToUpdate);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ONEPSYCHO_API UCharacterInventoryComponent : public UActorComponent
@@ -37,6 +38,9 @@ public:
     UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
     FOnWeaponAmmoAviable OnWeaponAmmoAviable;
 
+    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    FOnUpdateWeaponSlots OnUpdateWeaponSlots;
+
 protected:
     virtual void BeginPlay() override;
 
@@ -48,7 +52,7 @@ public:
     TArray<FWeaponSlot> WeaponSlots;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
     TArray<FAmmoSlot> AmmoSlots;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
     int32 MaxSlotsWeapon = 0;
 
     bool SwitchWeaponToIndex(int32 ChangeToIndex, int32 OldIndex, FAdditionalWeaponInfo OldInfo, bool bIsForward);
@@ -58,6 +62,20 @@ public:
     FName GetWeaponNameBySlotIndex(int32 indexSlot);
     void SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeaponInfo NewInfo);
 
-    void AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 AmmoTaken);
+    UFUNCTION(BlueprintCallable)
+    void AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChangeAmmo);
     bool CheckAmmoForWeapon(EWeaponType TypeWeapon, int8& AviableAmmoForWeapon);
+
+    // Interface PickUpActors
+    UFUNCTION(BlueprintCallable, Category = "Interface")
+    bool CheckCanTakeAmmo(EWeaponType AmmoType);
+
+    UFUNCTION(BlueprintCallable, Category = "Interface")
+    bool CheckCanTakeWeapon(int32& FreeSlot);
+
+    UFUNCTION(BlueprintCallable, Category = "Interface")
+    void SwitchWeaponToInventory();
+
+    UFUNCTION(BlueprintCallable, Category = "Interface")
+    bool TryGetWeaponToInventory(FWeaponSlot NewWeapon);
 };
