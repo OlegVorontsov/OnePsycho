@@ -129,7 +129,7 @@ public:
 
     //функция спавна оружия
     UFUNCTION(BlueprintCallable)
-    void InitWeapon(FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo); // int32 NewCurrentIndexWeapon);
+    void InitWeapon(FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon);
 
     //функция перезарядки
     UFUNCTION(BlueprintCallable)

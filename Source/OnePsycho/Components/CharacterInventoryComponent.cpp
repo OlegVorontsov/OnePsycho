@@ -43,7 +43,7 @@ void UCharacterInventoryComponent::BeginPlay()
     if (WeaponSlots.IsValidIndex(0))
     {
         if (!WeaponSlots[0].NameItem.IsNone())
-            OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo); // 0);
+            OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
     }
 }
 
@@ -68,7 +68,7 @@ bool UCharacterInventoryComponent::SwitchWeaponToIndex(
 
     FName NewIdWeapon;
     FAdditionalWeaponInfo NewAdditionalInfo;
-    int32 NewCurrentIndex = 0;
+    int32 NewCurrentIndex;
 
     if (WeaponSlots.IsValidIndex(CorrectIndex))
     {
@@ -393,7 +393,7 @@ bool UCharacterInventoryComponent::SwitchWeaponToIndex(
     if (bIsSuccess)
     {
         SetAdditionalInfoWeapon(OldIndex, OldInfo);
-        OnSwitchWeapon.Broadcast(NewIdWeapon, NewAdditionalInfo); // NewCurrentIndex);
+        OnSwitchWeapon.Broadcast(NewIdWeapon, NewAdditionalInfo, NewCurrentIndex);
         // OnWeaponAmmoAviable.Broadcast();
     }
     return bIsSuccess;
@@ -521,6 +521,7 @@ bool UCharacterInventoryComponent::CheckAmmoForWeapon(EWeaponType TypeWeapon, in
     return false;
 }
 
+//функция проверки нужны ли боеприпасы
 bool UCharacterInventoryComponent::CheckCanTakeAmmo(EWeaponType AmmoType)
 {
     bool result = false;
@@ -554,7 +555,7 @@ bool UCharacterInventoryComponent::CheckCanTakeWeapon(int32& FreeSlot)
 
 void UCharacterInventoryComponent::SwitchWeaponToInventory() {}
 
-//функция пикапа оружтя в пустой слот оружия
+//функция пикапа оружия в пустой слот оружия
 bool UCharacterInventoryComponent::TryGetWeaponToInventory(FWeaponSlot NewWeapon)
 {
     int32 indexSlot = -1;
@@ -563,7 +564,8 @@ bool UCharacterInventoryComponent::TryGetWeaponToInventory(FWeaponSlot NewWeapon
         if (WeaponSlots.IsValidIndex(indexSlot))
         {
             WeaponSlots[indexSlot] = NewWeapon;
-            OnUpdateWeaponSlots.Broadcast(WeaponSlots);
+
+            OnUpdateWeaponSlots.Broadcast(indexSlot, NewWeapon);
             return true;
         }
     }

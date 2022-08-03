@@ -7,14 +7,14 @@
 #include "Types.h"
 #include "CharacterInventoryComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSwitchWeapon, FName, WeaponIdName, FAdditionalWeaponInfo,
-    WeaponAdditionalInfo); // int32, NewCurrentIndexWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+    FOnSwitchWeapon, FName, WeaponIdName, FAdditionalWeaponInfo, WeaponAdditionalInfo, int32, NewCurrentIndexWeapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChange, EWeaponType, TypeAmmo, int32, Cout);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
     FOnWeaponAdditionalInfoChange, int32, IndexSlot, FAdditionalWeaponInfo, AdditionalInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoEmpty, EWeaponType, WeaponType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoAviable, EWeaponType, WeaponType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateWeaponSlots, TArray<FWeaponSlot>, WeaponSlotsToUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateWeaponSlots, int32, IndexSlotChange, FWeaponSlot, NewInfo);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ONEPSYCHO_API UCharacterInventoryComponent : public UActorComponent

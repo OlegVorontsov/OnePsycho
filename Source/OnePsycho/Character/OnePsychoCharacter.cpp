@@ -322,7 +322,7 @@ AWeaponDefault* AOnePsychoCharacter::GetCurrentWeapon()
 
 //функция спавна оружия
 void AOnePsychoCharacter::InitWeapon(
-    FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo) // int32 NewCurrentIndexWeapon)
+    FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon)
 {
     if (CurrentWeapon)
     {
