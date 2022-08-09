@@ -355,15 +355,15 @@ void AOnePsychoCharacter::InitWeapon(
                     CurrentWeapon = myWeapon;
 
                     myWeapon->WeaponSetting = myWeaponInfo;
-                    myWeapon->AdditionalWeaponInfo.Round = myWeaponInfo.MaxRound;
+                    // myWeapon->AdditionalWeaponInfo.Round = myWeaponInfo.MaxRound;
 
                     myWeapon->ReloadTime = myWeaponInfo.ReloadTime;
                     myWeapon->UpdateStateWeapon(MovementState);
 
                     myWeapon->AdditionalWeaponInfo = WeaponAdditionalInfo;
-                    if (CharacterInventoryComponent)
-                        // CurrentIndexWeapon = NewCurrentIndexWeapon;
-                        CurrentIndexWeapon = CharacterInventoryComponent->GetWeaponIndexSlotByName(IdWeapon);
+                    // if (CharacterInventoryComponent)
+                    CurrentIndexWeapon = NewCurrentIndexWeapon;
+                    // CurrentIndexWeapon = CharacterInventoryComponent->GetWeaponIndexSlotByName(IdWeapon);
 
                     myWeapon->OnWeaponReloadStart.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadStart);
                     myWeapon->OnWeaponReloadEnd.AddDynamic(this, &AOnePsychoCharacter::WeaponReloadEnd);

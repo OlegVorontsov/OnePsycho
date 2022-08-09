@@ -74,8 +74,13 @@ public:
     bool CheckCanTakeWeapon(int32& FreeSlot);
 
     UFUNCTION(BlueprintCallable, Category = "Interface")
-    void SwitchWeaponToInventory();
+    bool SwitchWeaponToInventory(
+        FWeaponSlot NewWeapon, int32 IndexSlot, int32 CurrentIndexWeaponChar, FDropItem& DropItemInfo);
 
     UFUNCTION(BlueprintCallable, Category = "Interface")
     bool TryGetWeaponToInventory(FWeaponSlot NewWeapon);
+
+    //функция сброса текущего оружия
+    UFUNCTION(BlueprintCallable, Category = "Interface")
+    bool GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo);
 };

@@ -322,6 +322,22 @@ struct FAmmoSlot
     int32 MaxCout = 100;
 };
 
+//данные о выбрасываемом оружии
+USTRUCT(BlueprintType)
+struct FDropItem : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DropWeapon")
+    UStaticMesh* WeaponStaticMesh = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DropWeapon")
+    USkeletalMesh* WeaponSkeletalMesh = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DropWeapon")
+    FWeaponSlot WeaponInfo;
+};
+
 UCLASS()
 class ONEPSYCHO_API UTypes : public UBlueprintFunctionLibrary
 {

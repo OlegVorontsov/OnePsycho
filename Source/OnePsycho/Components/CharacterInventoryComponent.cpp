@@ -68,7 +68,7 @@ bool UCharacterInventoryComponent::SwitchWeaponToIndex(
 
     FName NewIdWeapon;
     FAdditionalWeaponInfo NewAdditionalInfo;
-    int32 NewCurrentIndex;
+    int32 NewCurrentIndex = 0;
 
     if (WeaponSlots.IsValidIndex(CorrectIndex))
     {
@@ -446,6 +446,16 @@ int32 UCharacterInventoryComponent::GetWeaponIndexSlotByName(FName IdWeaponName)
     return result;
 }
 
+FName UCharacterInventoryComponent::GetWeaponNameBySlotIndex(int32 indexSlot)
+{
+    FName result;
+    if (WeaponSlots.IsValidIndex(indexSlot))
+    {
+        result = WeaponSlots[indexSlot].NameItem;
+    }
+    return result;
+}
+
 //установка кол-ва патронов оружию
 void UCharacterInventoryComponent::SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeaponInfo NewInfo)
 {
@@ -553,7 +563,23 @@ bool UCharacterInventoryComponent::CheckCanTakeWeapon(int32& FreeSlot)
     return bIsFreeSlot;
 }
 
-void UCharacterInventoryComponent::SwitchWeaponToInventory() {}
+bool UCharacterInventoryComponent::SwitchWeaponToInventory(
+    FWeaponSlot NewWeapon, int32 IndexSlot, int32 CurrentIndexWeaponChar, FDropItem& DropItemInfo)
+{
+    bool result = false;
+
+    if (WeaponSlots.IsValidIndex(IndexSlot) && GetDropItemInfoFromInventory(IndexSlot, DropItemInfo))
+    {
+        WeaponSlots[IndexSlot] = NewWeapon;
+        SwitchWeaponToIndex(CurrentIndexWeaponChar, -1, NewWeapon.AdditionalInfo, true);
+
+        //обновляем виджет оружия
+        OnUpdateWeaponSlots.Broadcast(IndexSlot, NewWeapon);
+
+        result = true;
+    }
+    return result;
+}
 
 //функция пикапа оружия в пустой слот оружия
 bool UCharacterInventoryComponent::TryGetWeaponToInventory(FWeaponSlot NewWeapon)
@@ -570,4 +596,23 @@ bool UCharacterInventoryComponent::TryGetWeaponToInventory(FWeaponSlot NewWeapon
         }
     }
     return false;
+}
+
+//функция сброса текущего оружия
+bool UCharacterInventoryComponent::GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo)
+{
+    bool result = false;
+
+    FName DropItemName = GetWeaponNameBySlotIndex(IndexSlot);
+
+    UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+    if (myGI)
+    {
+        result = myGI->GetDropItemInfoByName(DropItemName, DropItemInfo);
+        if (WeaponSlots.IsValidIndex(IndexSlot))
+        {
+            DropItemInfo.WeaponInfo.AdditionalInfo = WeaponSlots[IndexSlot].AdditionalInfo;
+        }
+    }
+    return result;
 }

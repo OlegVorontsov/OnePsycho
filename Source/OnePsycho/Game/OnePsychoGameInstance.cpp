@@ -22,3 +22,30 @@ bool UOnePsychoGameInstance::GetWeaponInfoByName(FName NameWeapon, FWeaponInfo& 
     }
     return bIsFind;
 }
+
+bool UOnePsychoGameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo)
+{
+    bool bIsFind = false;
+
+    if (DropItemInfoTable)
+    {
+        FDropItem* DropItemInfoRow;
+        TArray<FName> RowNames = DropItemInfoTable->GetRowNames();
+
+        int8 i = 0;
+        while (i < RowNames.Num() && !bIsFind)
+        {
+            DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(RowNames[i], "");
+            if (DropItemInfoRow->WeaponInfo.NameItem == NameItem)
+            {
+                OutInfo = (*DropItemInfoRow);
+                bIsFind = true;
+            }
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UOnePsychoGameInstance::GetDropItemInfoByName - DropItemInfoTable - NULL"));
+    }
+    return bIsFind;
+}
