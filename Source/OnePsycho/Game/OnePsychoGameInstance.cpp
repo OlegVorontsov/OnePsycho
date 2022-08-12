@@ -23,7 +23,7 @@ bool UOnePsychoGameInstance::GetWeaponInfoByName(FName NameWeapon, FWeaponInfo& 
     return bIsFind;
 }
 
-bool UOnePsychoGameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo)
+bool UOnePsychoGameInstance::GetDropItemInfoByWeaponName(FName NameItem, FDropItem& OutInfo)
 {
     bool bIsFind = false;
 
@@ -41,11 +41,34 @@ bool UOnePsychoGameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& Ou
                 OutInfo = (*DropItemInfoRow);
                 bIsFind = true;
             }
+            i++;
         }
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("UOnePsychoGameInstance::GetDropItemInfoByName - DropItemInfoTable - NULL"));
+        UE_LOG(
+            LogTemp, Warning, TEXT("UOnePsychoGameInstance::GetDropItemInfoByWeaponName - DropItemInfoTable - NULL"));
+    }
+    return bIsFind;
+}
+
+bool UOnePsychoGameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo)
+{
+    bool bIsFind = false;
+    FDropItem* DropItemInfoRow;
+
+    if (DropItemInfoTable)
+    {
+        DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
+        if (DropItemInfoRow)
+        {
+            bIsFind = true;
+            OutInfo = *DropItemInfoRow;
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("UOnePsychoGameInstance::GetDropItemInfoByName - DropItemTable -NULL"));
     }
     return bIsFind;
 }
