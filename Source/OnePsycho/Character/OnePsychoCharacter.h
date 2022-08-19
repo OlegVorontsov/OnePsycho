@@ -1,12 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-
 #include "OnePsycho/FuncLibrary/Types.h"
-
+#include "OnePsychoCharHealthComponent.h"
 #include "OnePsychoCharacter.generated.h"
 
 class AWeaponDefault;
@@ -34,6 +32,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
     class UCharacterInventoryComponent* CharacterInventoryComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+    class UOnePsychoCharHealthComponent* CharHealthComponent;
 
     /** Returns CursorToWorld subobject **/
     // FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }

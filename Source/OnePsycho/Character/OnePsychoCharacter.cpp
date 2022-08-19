@@ -1,4 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "OnePsychoCharacter.h"
 #include "UObject/ConstructorHelpers.h"
@@ -48,6 +47,9 @@ AOnePsychoCharacter::AOnePsychoCharacter()
 
     // Создаем систему инвенторя
     CharacterInventoryComponent = CreateDefaultSubobject<UCharacterInventoryComponent>(TEXT("InventoryComponent"));
+
+    // Создаем систему здоровья
+    CharHealthComponent = CreateDefaultSubobject<UOnePsychoCharHealthComponent>(TEXT("HealthComponent"));
 
     if (CharacterInventoryComponent)
     {

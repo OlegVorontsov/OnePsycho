@@ -161,7 +161,6 @@ void AWeaponDefault::SetWeaponStateFire(bool bIsFire)
         WeaponFiring = bIsFire;
     else
         WeaponFiring = false;
-    FireTimer = 0.01f;
 }
 
 bool AWeaponDefault::CheckWeaponCanFire()
