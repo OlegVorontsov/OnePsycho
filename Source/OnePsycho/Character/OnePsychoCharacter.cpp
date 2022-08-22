@@ -51,6 +51,11 @@ AOnePsychoCharacter::AOnePsychoCharacter()
     // Создаем систему здоровья
     CharHealthComponent = CreateDefaultSubobject<UOnePsychoCharHealthComponent>(TEXT("HealthComponent"));
 
+    if (CharHealthComponent)
+    {
+        CharHealthComponent->OnDead.AddDynamic(this, &AOnePsychoCharacter::CharDead);
+    }
+
     if (CharacterInventoryComponent)
     {
         CharacterInventoryComponent->OnSwitchWeapon.AddDynamic(this, &AOnePsychoCharacter::InitWeapon);
@@ -132,116 +137,120 @@ void AOnePsychoCharacter::InputAxisY(float Value)
 }
 void AOnePsychoCharacter::MovementTick(float DeltaTime)
 {
-    AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
-    AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
-
-    //проверка двигается ли персонаж
-    if (AxisX != 0 || AxisY != 0)
-        CharMoving = true;
-    else
-        CharMoving = false;
-    ChangeMovementState();
-
-    //записываем в переменную поворот персонажа вокруг оси Z
-    float ActualRotationYaw = GetActorRotation().Yaw;
-
-    //записываем в переменную контроллер персонажа
-    APlayerController* myController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-
-    if (myController && MovementState != EMovementState::SprintRun_State)
+    if (bIsAlive)
     {
-        //создаем переменную для точки куда указывает курсор
-        FHitResult ResultHit;
+        AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
+        AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
-        //получаем точки соприкосновения курсора по созданноу каналу
-        // myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
-        myController->GetHitResultUnderCursor(ECC_GameTraceChannel1, true, ResultHit);
+        //проверка двигается ли персонаж
+        if (AxisX != 0 || AxisY != 0)
+            CharMoving = true;
+        else
+            CharMoving = false;
+        ChangeMovementState();
 
-        //получаем угол поворота в сторону курсора и записываем в переменную
-        float FindRotatorResultYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
+        //записываем в переменную поворот персонажа вокруг оси Z
+        float ActualRotationYaw = GetActorRotation().Yaw;
 
-        //вычисляем разницу в углах поворота в сторону курсора и персонажа
-        float YawDifference = FindRotatorResultYaw - ActualRotationYaw;
+        //записываем в переменную контроллер персонажа
+        APlayerController* myController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
-        //коррекция определения ротации (в градусах)
-        // if (YawDifference < -180)
-        // YawDifference += 360;
-        // else if (YawDifference > 180)
-        // YawDifference -= 360;
-
-        //сглаживание поворота персонажа
-        // if (-RotationChangeStep >= YawDifference)
-        // AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
-        // else if (YawDifference >= RotationChangeStep)
-        // AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
-        // else
-        SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
-
-        //указываем оружию стрелять всторону расположения курсора
-        if (CurrentWeapon)
+        if (myController && MovementState != EMovementState::SprintRun_State)
         {
-            //переменная высоты от пола до оружия
-            FVector Displacement = FVector(0);
-            switch (MovementState)
+            //создаем переменную для точки куда указывает курсор
+            FHitResult ResultHit;
+
+            //получаем точки соприкосновения курсора по созданноу каналу
+            // myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
+            myController->GetHitResultUnderCursor(ECC_GameTraceChannel1, true, ResultHit);
+
+            //получаем угол поворота в сторону курсора и записываем в переменную
+            float FindRotatorResultYaw =
+                UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
+
+            //вычисляем разницу в углах поворота в сторону курсора и персонажа
+            float YawDifference = FindRotatorResultYaw - ActualRotationYaw;
+
+            //коррекция определения ротации (в градусах)
+            // if (YawDifference < -180)
+            // YawDifference += 360;
+            // else if (YawDifference > 180)
+            // YawDifference -= 360;
+
+            //сглаживание поворота персонажа
+            // if (-RotationChangeStep >= YawDifference)
+            // AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
+            // else if (YawDifference >= RotationChangeStep)
+            // AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
+            // else
+            SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
+
+            //указываем оружию стрелять всторону расположения курсора
+            if (CurrentWeapon)
             {
-            case EMovementState::Aim_State:
-                Displacement = FVector(0.0f, 0.0f, 160.0f);
-                CurrentWeapon->ShouldReduceDispersion = true;
-                break;
-            case EMovementState::AimWalk_State:
-                CurrentWeapon->ShouldReduceDispersion = true;
-                Displacement = FVector(0.0f, 0.0f, 160.0f);
-                break;
-            case EMovementState::Walk_State:
-                Displacement = FVector(0.0f, 0.0f, 120.0f);
-                CurrentWeapon->ShouldReduceDispersion = false;
-                break;
-            case EMovementState::Run_State:
-                Displacement = FVector(0.0f, 0.0f, 120.0f);
-                CurrentWeapon->ShouldReduceDispersion = false;
-                break;
-            case EMovementState::SprintRun_State:
-                break;
-            default:
-                break;
+                //переменная высоты от пола до оружия
+                FVector Displacement = FVector(0);
+                switch (MovementState)
+                {
+                case EMovementState::Aim_State:
+                    Displacement = FVector(0.0f, 0.0f, 160.0f);
+                    CurrentWeapon->ShouldReduceDispersion = true;
+                    break;
+                case EMovementState::AimWalk_State:
+                    CurrentWeapon->ShouldReduceDispersion = true;
+                    Displacement = FVector(0.0f, 0.0f, 160.0f);
+                    break;
+                case EMovementState::Walk_State:
+                    Displacement = FVector(0.0f, 0.0f, 120.0f);
+                    CurrentWeapon->ShouldReduceDispersion = false;
+                    break;
+                case EMovementState::Run_State:
+                    Displacement = FVector(0.0f, 0.0f, 120.0f);
+                    CurrentWeapon->ShouldReduceDispersion = false;
+                    break;
+                case EMovementState::SprintRun_State:
+                    break;
+                default:
+                    break;
+                }
+                //передаем в оружие точку курсора + высоту над полом
+                CurrentWeapon->ShootEndLocation = ResultHit.Location + Displacement;
+                // aim cursor like 3d Widget?
             }
-            //передаем в оружие точку курсора + высоту над полом
-            CurrentWeapon->ShootEndLocation = ResultHit.Location + Displacement;
-            // aim cursor like 3d Widget?
         }
-    }
 
-    //реализация выносливости
+        //реализация выносливости
 
-    //если включен спринт и персонжа двигается
-    if (MovementState == EMovementState::SprintRun_State && (AxisX != 0 || AxisY != 0))
-    {
-        //если выносливость > скорости бега
-        if (SprintRunStamina > MovementSpeedInfo.RunSpeedNormal)
+        //если включен спринт и персонжа двигается
+        if (MovementState == EMovementState::SprintRun_State && (AxisX != 0 || AxisY != 0))
         {
-            //уменьшаем выносливость
-            SprintRunStamina -= StaminaStepDown;
+            //если выносливость > скорости бега
+            if (SprintRunStamina > MovementSpeedInfo.RunSpeedNormal)
+            {
+                //уменьшаем выносливость
+                SprintRunStamina -= StaminaStepDown;
+            }
+            else
+            {
+                //переходим на бег
+                SprintRunEnabled = false;
+                MovementState = EMovementState::Run_State;
+                CharacterUpdate();
+            }
+            //если выносливость < скорости спринта
+            /*if (SprintRunStamina < MovementSpeedInfo.SprintRunSpeedRun)
+            {
+                ResSpeed = SprintRunStamina;
+                GetCharacterMovement()->MaxWalkSpeed = ResSpeed;
+            }*/
         }
+        //восстанавливаем выносливость
         else
         {
-            //переходим на бег
-            SprintRunEnabled = false;
-            MovementState = EMovementState::Run_State;
-            CharacterUpdate();
-        }
-        //если выносливость < скорости спринта
-        /*if (SprintRunStamina < MovementSpeedInfo.SprintRunSpeedRun)
-        {
-            ResSpeed = SprintRunStamina;
-            GetCharacterMovement()->MaxWalkSpeed = ResSpeed;
-        }*/
-    }
-    //восстанавливаем выносливость
-    else
-    {
-        if (SprintRunStamina < SprintRunStaminaUpperLimit)
-        {
-            SprintRunStamina += StaminaStepUp;
+            if (SprintRunStamina < SprintRunStaminaUpperLimit)
+            {
+                SprintRunStamina += StaminaStepUp;
+            }
         }
     }
 }
@@ -499,4 +508,44 @@ void AOnePsychoCharacter::TrySwitchPreviosWeapon()
             }
         }
     }
+}
+
+void AOnePsychoCharacter::CharDead()
+{
+    float TimeAnim = 0.0f;
+    int32 rnd = FMath::RandHelper(DeadsAnim.Num());
+    if (DeadsAnim.IsValidIndex(rnd) && DeadsAnim[rnd] && GetMesh() && GetMesh()->GetAnimInstance())
+    {
+        //получаем время проигрывания анимации
+        TimeAnim = DeadsAnim[rnd]->GetPlayLength();
+        GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
+    }
+
+    bIsAlive = false;
+    UnPossessed();
+
+    GetWorldTimerManager().SetTimer(
+        TimerHandle_RagDollTimer, this, &AOnePsychoCharacter::EnableRagdoll, TimeAnim, false);
+
+    GetCursorToWorld()->SetVisibility(false);
+}
+
+void AOnePsychoCharacter::EnableRagdoll()
+{
+    if (GetMesh())
+    {
+        GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+        GetMesh()->SetSimulatePhysics(true);
+    }
+}
+
+float AOnePsychoCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+    class AController* EventInstigator, AActor* DamageCauser)
+{
+    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    if (bIsAlive)
+    {
+        CharHealthComponent->ChangeCurrentHealth(-DamageAmount);
+    }
+    return ActualDamage;
 }

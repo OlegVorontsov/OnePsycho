@@ -13,4 +13,6 @@ class AOnePsychoGameMode : public AGameModeBase
 
 public:
     AOnePsychoGameMode();
+
+    void PlayerCharacterDead();
 };

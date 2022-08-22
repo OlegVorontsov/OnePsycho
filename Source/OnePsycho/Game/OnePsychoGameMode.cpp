@@ -17,3 +17,5 @@ AOnePsychoGameMode::AOnePsychoGameMode()
         DefaultPawnClass = PlayerPawnBPClass.Class;
     }
 }
+
+void AOnePsychoGameMode::PlayerCharacterDead() {}

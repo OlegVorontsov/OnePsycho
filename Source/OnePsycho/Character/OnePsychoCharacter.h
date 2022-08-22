@@ -20,6 +20,8 @@ protected:
 public:
     AOnePsychoCharacter();
 
+    FTimerHandle TimerHandle_RagDollTimer;
+
     // Called every frame.
     virtual void Tick(float DeltaSeconds) override;
 
@@ -80,6 +82,11 @@ public:
     bool AimEnabled = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool CharMoving = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    bool bIsAlive = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    TArray<UAnimMontage*> DeadsAnim;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationChangeStep = 5;
@@ -166,4 +173,11 @@ public:
 
     UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
     int32 CurrentIndexWeapon = 0;
+
+    UFUNCTION()
+    void CharDead();
+
+    void EnableRagdoll();
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+        class AController* EventInstigator, AActor* DamageCauser) override;
 };

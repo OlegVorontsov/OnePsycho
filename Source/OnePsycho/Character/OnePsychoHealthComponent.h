@@ -45,9 +45,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Health")
     virtual void ChangeCurrentHealth(float ChangeValue);
 
-    UFUNCTION(BlueprintNativeEvent)
-    void DeadEvent();
-
     /*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")
     float CoolDownShieldRecoverTime = 5.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")

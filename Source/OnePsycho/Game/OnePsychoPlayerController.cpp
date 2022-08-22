@@ -113,3 +113,8 @@ void AOnePsychoPlayerController::OnSetDestinationReleased()
     // clear flag to indicate we should stop updating the destination
     bMoveToMouseCursor = false;
 }
+
+void AOnePsychoPlayerController::OnUnPossess()
+{
+    Super::OnUnPossess();
+}
