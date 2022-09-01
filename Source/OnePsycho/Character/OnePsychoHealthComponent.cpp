@@ -27,10 +27,11 @@ void UOnePsychoHealthComponent::SetCurrentHealth(float NewHealth)
     Health = NewHealth;
 }
 
-void UOnePsychoHealthComponent::ChangeCurrentHealth(float ChangeValue)
+void UOnePsychoHealthComponent::ChangeHealthValue(float ChangeValue)
 {
+    ChangeValue = ChangeValue * CoefDamage;
+
     Health += ChangeValue;
-    OnHealthChange.Broadcast(Health, ChangeValue);
 
     if (Health > 100.0f)
     {
@@ -43,4 +44,6 @@ void UOnePsychoHealthComponent::ChangeCurrentHealth(float ChangeValue)
             OnDead.Broadcast();
         }
     }
+
+    OnHealthChange.Broadcast(Health, ChangeValue);
 }

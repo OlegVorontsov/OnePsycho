@@ -33,6 +33,9 @@ protected:
     float Health = 100.0f;
 
 public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+    float CoefDamage = 1.0f;
+
     virtual void TickComponent(
         float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -43,7 +46,7 @@ public:
     void SetCurrentHealth(float NewHealth);
 
     UFUNCTION(BlueprintCallable, Category = "Health")
-    virtual void ChangeCurrentHealth(float ChangeValue);
+    virtual void ChangeHealthValue(float ChangeValue);
 
     /*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")
     float CoolDownShieldRecoverTime = 5.0f;
