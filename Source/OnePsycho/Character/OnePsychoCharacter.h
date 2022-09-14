@@ -5,12 +5,14 @@
 #include "GameFramework/Character.h"
 #include "OnePsycho/FuncLibrary/Types.h"
 #include "OnePsychoCharHealthComponent.h"
+#include "OnePsycho_IGameActor.h"
+#include "StateEffect.h"
 #include "OnePsychoCharacter.generated.h"
 
 class AWeaponDefault;
 
 UCLASS(Blueprintable)
-class AOnePsychoCharacter : public ACharacter
+class AOnePsychoCharacter : public ACharacter, public IOnePsycho_IGameActor
 {
     GENERATED_BODY()
 
@@ -88,6 +90,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     TArray<UAnimMontage*> DeadsAnim;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
+    TSubclassOf<UStateEffect> AbilityEffect;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationChangeStep = 5;
 
@@ -131,6 +136,9 @@ public:
     // Weapon
     AWeaponDefault* CurrentWeapon = nullptr;
 
+    //Effects
+    TArray<UStateEffect*> Effects;
+
     // for demo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
     FName InitWeaponName;
@@ -171,8 +179,20 @@ public:
     void TrySwicthNextWeapon();
     void TrySwitchPreviosWeapon();
 
+    void TryAbilityEnabled();
+
     UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
     int32 CurrentIndexWeapon = 0;
+
+    // Interface
+    EPhysicalSurface GetSurfaceType() override;
+
+    TArray<UStateEffect*> GetAllCurrentEffects() override;
+
+    void RemoveEffect(UStateEffect* RemoveEffect) override;
+
+    void AddEffect(UStateEffect* newEffect) override;
+    // End Interface
 
     UFUNCTION()
     void CharDead();

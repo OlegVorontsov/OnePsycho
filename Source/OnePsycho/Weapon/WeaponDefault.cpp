@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/StaticMeshActor.h"
 #include "CharacterInventoryComponent.h"
+#include "StateEffect.h"
 
 AWeaponDefault::AWeaponDefault()
 {
@@ -330,6 +331,15 @@ void AWeaponDefault::Fire()
                             WeaponSetting.ProjectileSetting.HitSound,     //
                             Hit.ImpactPoint);
                     }
+
+                    UTypes::AddEffectBySurfaceType(Hit.GetActor(), ProjectileInfo.Effect, mySurfacetype);
+
+                    // if (Hit.GetActor()->GetClass()->ImplementsInterface(UOnePsycho_IGameActor::StaticClass()))
+                    //{
+                    // IOnePsycho_IGameActor::Execute_AviableForEffects(Hit.GetActor());
+                    // IOnePsycho_IGameActor::Execute_AviableForEffectsBP(Hit.GetActor());
+                    //}
+
                     UGameplayStatics::ApplyDamage(Hit.GetActor(),         //
                         WeaponSetting.ProjectileSetting.ProjectileDamage, //
                         GetInstigatorController(),                        //

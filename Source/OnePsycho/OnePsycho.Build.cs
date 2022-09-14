@@ -27,7 +27,8 @@ public class OnePsycho : ModuleRules
 			"OnePsycho/FuncLibrary",
 			"OnePsycho/Game",
 			"OnePsycho/Weapon",
-			"OnePsycho/Components"
+			"OnePsycho/Components",
+			"OnePsycho/Interface"
 		});
 	}
 }

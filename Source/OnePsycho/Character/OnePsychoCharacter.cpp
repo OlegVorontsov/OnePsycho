@@ -15,6 +15,7 @@
 #include "OnePsycho/Weapon/WeaponDefault.h"
 #include "OnePsycho/Components/CharacterInventoryComponent.h"
 #include "OnePsychoGameInstance.h"
+#include "ProjectileDefault.h"
 
 AOnePsychoCharacter::AOnePsychoCharacter()
 {
@@ -124,6 +125,9 @@ void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputCom
         TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwicthNextWeapon);
     NewInputComponent->BindAction(
         TEXT("SwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwitchPreviosWeapon);
+
+    NewInputComponent->BindAction(
+        TEXT("AbilityAction"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TryAbilityEnabled);
 }
 
 //функции движения
@@ -510,6 +514,53 @@ void AOnePsychoCharacter::TrySwitchPreviosWeapon()
     }
 }
 
+void AOnePsychoCharacter::TryAbilityEnabled()
+{
+    if (AbilityEffect)
+    {
+        UStateEffect* NewEffect = NewObject<UStateEffect>(this, AbilityEffect);
+        if (NewEffect)
+        {
+            NewEffect->InitObject(this);
+        }
+    }
+}
+
+EPhysicalSurface AOnePsychoCharacter::GetSurfaceType()
+{
+    EPhysicalSurface Result = EPhysicalSurface::SurfaceType_Default;
+    if (CharHealthComponent)
+    {
+        if (CharHealthComponent->GetCurrentShield() <= 0)
+        {
+            if (GetMesh())
+            {
+                UMaterialInterface* myMaterial = GetMesh()->GetMaterial(0);
+                if (myMaterial)
+                {
+                    Result = myMaterial->GetPhysicalMaterial()->SurfaceType;
+                }
+            }
+        }
+    }
+    return Result;
+}
+
+TArray<UStateEffect*> AOnePsychoCharacter::GetAllCurrentEffects()
+{
+    return Effects;
+}
+
+void AOnePsychoCharacter::RemoveEffect(UStateEffect* RemoveEffect)
+{
+    Effects.Remove(RemoveEffect);
+}
+
+void AOnePsychoCharacter::AddEffect(UStateEffect* newEffect)
+{
+    Effects.Add(newEffect);
+}
+
 void AOnePsychoCharacter::CharDead()
 {
     float TimeAnim = 0.0f;
@@ -546,6 +597,16 @@ float AOnePsychoCharacter::TakeDamage(float DamageAmount, struct FDamageEvent co
     if (bIsAlive)
     {
         CharHealthComponent->ChangeHealthValue(-DamageAmount);
+    }
+
+    //если идет урон по радиусу
+    if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
+    {
+        AProjectileDefault* myProjectile = Cast<AProjectileDefault>(DamageCauser);
+        if (myProjectile)
+        {
+            UTypes::AddEffectBySurfaceType(this, myProjectile->ProjectileSetting.Effect, GetSurfaceType());
+        }
     }
     return ActualDamage;
 }
