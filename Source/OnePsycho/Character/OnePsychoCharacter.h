@@ -93,6 +93,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
     TSubclassOf<UStateEffect> AbilityEffect;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Invulnerability")
+    TSubclassOf<UStateEffect> InvulnerabilityEffect;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationChangeStep = 5;
 
@@ -136,7 +139,7 @@ public:
     // Weapon
     AWeaponDefault* CurrentWeapon = nullptr;
 
-    //Effects
+    // Effects
     TArray<UStateEffect*> Effects;
 
     // for demo
@@ -179,8 +182,6 @@ public:
     void TrySwicthNextWeapon();
     void TrySwitchPreviosWeapon();
 
-    void TryAbilityEnabled();
-
     UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
     int32 CurrentIndexWeapon = 0;
 
@@ -192,6 +193,11 @@ public:
     void RemoveEffect(UStateEffect* RemoveEffect) override;
 
     void AddEffect(UStateEffect* newEffect) override;
+
+    void TryAbilityEnabled();
+
+    UFUNCTION(BlueprintCallable)
+    void InvulnerabilityEnabled();
     // End Interface
 
     UFUNCTION()

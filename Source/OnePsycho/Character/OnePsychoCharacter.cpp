@@ -526,6 +526,18 @@ void AOnePsychoCharacter::TryAbilityEnabled()
     }
 }
 
+void AOnePsychoCharacter::InvulnerabilityEnabled()
+{
+    if (InvulnerabilityEffect)
+    {
+        UStateEffect* NewEffect = NewObject<UStateEffect>(this, InvulnerabilityEffect);
+        if (NewEffect)
+        {
+            NewEffect->InitObject(this);
+        }
+    }
+}
+
 EPhysicalSurface AOnePsychoCharacter::GetSurfaceType()
 {
     EPhysicalSurface Result = EPhysicalSurface::SurfaceType_Default;

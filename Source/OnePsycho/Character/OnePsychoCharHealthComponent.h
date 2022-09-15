@@ -6,6 +6,7 @@
 #include "OnePsychoCharHealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShieldChange, float, Shield, float, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInvulnerabilityChange, bool, bIsInvulnerable);
 
 UCLASS()
 class ONEPSYCHO_API UOnePsychoCharHealthComponent : public UOnePsychoHealthComponent
@@ -15,11 +16,16 @@ public:
     UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Shield")
     FOnShieldChange OnShieldChange;
 
+    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Invulnerability")
+    FOnInvulnerabilityChange OnInvulnerabilityChange;
+
     FTimerHandle TimerHandle_CoolDownShieldTimer;
     FTimerHandle TimerHandle_ShieldRecoveryRateTimer;
 
 protected:
     float Shield = 100.0f;
+
+    bool bIsInvulnerable = false;
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")
@@ -41,4 +47,7 @@ public:
     void CoolDownShieldEnd();
 
     void RecoveryShield();
+
+    void SetInvulnerabilityEnabled();
+    void SetInvulnerabilityDisabled();
 };

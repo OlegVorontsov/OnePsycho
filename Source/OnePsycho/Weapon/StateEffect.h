@@ -71,3 +71,21 @@ public:
 
     UParticleSystemComponent* ParticleEmitter = nullptr;
 };
+
+//эффект неу€звимости по таймеру
+UCLASS()
+class ONEPSYCHO_API UStateEffect_InvulnerabilityTimer : public UStateEffect
+{
+    GENERATED_BODY()
+
+public:
+    bool InitObject(AActor* Actor) override;
+    void DestroyObject() override;
+
+    virtual void Execute();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting ExecuteTimer")
+        float Timer = 20.0f;
+
+    FTimerHandle TimerHandle_EffectTimer;
+};

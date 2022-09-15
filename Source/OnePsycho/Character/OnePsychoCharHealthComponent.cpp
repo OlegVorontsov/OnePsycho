@@ -5,17 +5,20 @@ void UOnePsychoCharHealthComponent::ChangeHealthValue(float ChangeValue)
 {
     float CurrentDamage = ChangeValue * CoefDamage;
 
-    if (Shield > 0.0f && ChangeValue < 0.0f)
+    if (!bIsInvulnerable)
     {
-        ChangeShieldValue(ChangeValue);
-        if (Shield < 0.0f)
+        if (Shield > 0.0f && ChangeValue < 0.0f)
         {
-            // fx
+            ChangeShieldValue(ChangeValue);
+            if (Shield < 0.0f)
+            {
+                // fx
+            }
         }
-    }
-    else
-    {
-        Super::ChangeHealthValue(ChangeValue);
+        else
+        {
+            Super::ChangeHealthValue(ChangeValue);
+        }
     }
 }
 
@@ -74,4 +77,18 @@ void UOnePsychoCharHealthComponent::RecoveryShield()
         Shield = tmp;
 
     OnShieldChange.Broadcast(Shield, ShieldRecoverValue);
+}
+
+void UOnePsychoCharHealthComponent::SetInvulnerabilityEnabled()
+{
+    bIsInvulnerable = true;
+
+    OnInvulnerabilityChange.Broadcast(bIsInvulnerable);
+}
+
+void UOnePsychoCharHealthComponent::SetInvulnerabilityDisabled()
+{
+    bIsInvulnerable = false;
+
+    OnInvulnerabilityChange.Broadcast(bIsInvulnerable);
 }

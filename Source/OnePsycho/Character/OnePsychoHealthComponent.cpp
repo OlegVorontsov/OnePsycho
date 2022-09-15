@@ -44,6 +44,5 @@ void UOnePsychoHealthComponent::ChangeHealthValue(float ChangeValue)
             OnDead.Broadcast();
         }
     }
-
     OnHealthChange.Broadcast(Health, ChangeValue);
 }

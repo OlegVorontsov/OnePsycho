@@ -1,6 +1,7 @@
 
 #include "StateEffect.h"
 #include "OnePsychoHealthComponent.h"
+#include "OnePsychoCharHealthComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "OnePsycho_IGameActor.h"
 
@@ -104,6 +105,47 @@ void UStateEffect_ExecuteTimer::Execute()
         if (myHealthComp)
         {
             myHealthComp->ChangeHealthValue(Power);
+        }
+    }
+}
+
+bool UStateEffect_InvulnerabilityTimer::InitObject(AActor* Actor)
+{
+    Super::InitObject(Actor);
+    Execute();
+
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle_EffectTimer, this, &UStateEffect_InvulnerabilityTimer::DestroyObject, Timer, false);
+
+    return true;
+}
+
+void UStateEffect_InvulnerabilityTimer::DestroyObject()
+{
+    if (myActor)
+    {
+        UOnePsychoCharHealthComponent* myHealthComp = Cast<UOnePsychoCharHealthComponent>(
+            myActor->GetComponentByClass(UOnePsychoCharHealthComponent::StaticClass()));
+
+        if (myHealthComp)
+        {
+            myHealthComp->SetInvulnerabilityDisabled();
+        }
+    }
+
+    Super::DestroyObject();
+}
+
+void UStateEffect_InvulnerabilityTimer::Execute()
+{
+    if (myActor)
+    {
+        UOnePsychoCharHealthComponent* myHealthComp = Cast<UOnePsychoCharHealthComponent>(
+            myActor->GetComponentByClass(UOnePsychoCharHealthComponent::StaticClass()));
+
+        if (myHealthComp)
+        {
+            myHealthComp->SetInvulnerabilityEnabled();
         }
     }
 }
