@@ -16,6 +16,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoEmpty, EWeaponType, Wea
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoAviable, EWeaponType, WeaponType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateWeaponSlots, int32, IndexSlotChange, FWeaponSlot, NewInfo);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponNotHaveRound, int32, IndexSlotWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHaveRound, int32, IndexSlotWeapon);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ONEPSYCHO_API UCharacterInventoryComponent : public UActorComponent
 {
@@ -24,22 +27,29 @@ class ONEPSYCHO_API UCharacterInventoryComponent : public UActorComponent
 public:
     UCharacterInventoryComponent();
 
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnSwitchWeapon OnSwitchWeapon;
 
-    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnAmmoChange OnAmmoChange;
 
-    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnWeaponAdditionalInfoChange OnWeaponAdditionalInfoChange;
 
-    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnWeaponAmmoEmpty OnWeaponAmmoEmpty;
 
-    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnWeaponAmmoAviable OnWeaponAmmoAviable;
 
-    UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnUpdateWeaponSlots OnUpdateWeaponSlots;
+
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
+    FOnWeaponNotHaveRound OnWeaponNotHaveRound;
+
+    UPROPERTY(BlueprintAssignable, Category = "Inventory")
+    FOnWeaponHaveRound OnWeaponHaveRound;
 
 protected:
     virtual void BeginPlay() override;
@@ -48,19 +58,24 @@ public:
     virtual void TickComponent(
         float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
     TArray<FWeaponSlot> WeaponSlots;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapons")
     TArray<FAmmoSlot> AmmoSlots;
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+
     int32 MaxSlotsWeapon = 0;
 
-    bool SwitchWeaponToIndex(int32 ChangeToIndex, int32 OldIndex, FAdditionalWeaponInfo OldInfo, bool bIsForward);
+    bool SwitchWeaponToIndexByNextPreviosIndex(
+        int32 ChangeToIndex, int32 OldIndex, FAdditionalWeaponInfo OldInfo, bool bIsForward);
+    bool SwitchWeaponByIndex(int32 IndexWeaponToChange, int32 PreviosIndex, FAdditionalWeaponInfo PreviosWeaponInfo);
 
     FAdditionalWeaponInfo GetAdditionalInfoWeapon(int32 IndexWeapon);
     int32 GetWeaponIndexSlotByName(FName IdWeaponName);
     FName GetWeaponNameBySlotIndex(int32 indexSlot);
     void SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeaponInfo NewInfo);
+
+    bool GetWeaponTypeByIndexSlot(int32 IndexSlot, EWeaponType& WeaponType);
+    bool GetWeaponTypeByNameWeapon(FName IdWeaponName, EWeaponType& WeaponType);
 
     UFUNCTION(BlueprintCallable)
     void AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChangeAmmo);
@@ -80,7 +95,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Interface")
     bool TryGetWeaponToInventory(FWeaponSlot NewWeapon);
 
-    //функция сброса текущего оружия
+    UFUNCTION(BlueprintCallable, Category = "Interface")
+    void DropWeapobByIndex(int32 ByIndex, FDropItem& DropItemInfo);
+
+    // функция сброса текущего оружия
     UFUNCTION(BlueprintCallable, Category = "Interface")
     bool GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo);
 };

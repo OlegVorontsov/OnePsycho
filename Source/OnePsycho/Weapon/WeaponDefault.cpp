@@ -187,10 +187,10 @@ void AWeaponDefault::Fire()
         SkeletalMeshWeapon->GetAnimInstance()->Montage_Play(WeaponSetting.AnimWeaponInfo.AnimWeaponFire);
     }
 
-    //проверяем есть ли гильзы для дропа
+    // проверяем есть ли гильзы для дропа
     if (WeaponSetting.ShellBullets.DropMesh)
     {
-        //если таймера нет дропаем сразу
+        // если таймера нет дропаем сразу
         if (WeaponSetting.ShellBullets.DropMeshTime < 0.0f)
         {
             InitDropMesh(WeaponSetting.ShellBullets.DropMesh,       //
@@ -209,13 +209,13 @@ void AWeaponDefault::Fire()
     }
 
     FireTimer = WeaponSetting.RateOfFire;
-    //посчет сколько патронов потрачено
+    // посчет сколько патронов потрачено
     AdditionalWeaponInfo.Round = AdditionalWeaponInfo.Round - 1;
     ChangeDispersionByShot();
 
     OnWeaponFireStart.Broadcast(AnimToPlay);
 
-    //звук и эффект выстрела
+    // звук и эффект выстрела
     UGameplayStatics::SpawnSoundAtLocation(
         GetWorld(), WeaponSetting.SoundFireWeapon, ShootLocation->GetComponentLocation());
     UGameplayStatics::SpawnEmitterAtLocation(
@@ -223,7 +223,7 @@ void AWeaponDefault::Fire()
 
     int8 NumberProjectile = GetNumberProjectileByShot();
 
-    //стрельбы пулей или трейсом
+    // стрельбы пулей или трейсом
     if (ShootLocation)
     {
         FVector SpawnLocation = ShootLocation->GetComponentLocation();
@@ -240,7 +240,7 @@ void AWeaponDefault::Fire()
             {
                 // Projectile Init ballistic fire
 
-                //вектор направления вылета пули
+                // вектор направления вылета пули
                 FVector Dir = EndLocation - SpawnLocation;
                 Dir.Normalize();
 
@@ -415,13 +415,13 @@ float AWeaponDefault::GetCurrentDispersion() const
     return Result;
 }
 
-//функция добавления разброса
+// функция добавления разброса
 FVector AWeaponDefault::ApplyDispersionToShoot(FVector DirectionShoot) const
 {
     return FMath::VRandCone(DirectionShoot, GetCurrentDispersion() * PI / 180.f);
 }
 
-//функция конечной точки стрельбы с разбросом
+// функция конечной точки стрельбы с разбросом
 FVector AWeaponDefault::GetFireEndLocation() const
 {
     bool bShootDirection = false;
@@ -432,7 +432,7 @@ FVector AWeaponDefault::GetFireEndLocation() const
 
     if (tmpV.Size() > SizeVectorToChangeShootDirectionLogic)
     {
-        //стрельба в направлении расположения курсора
+        // стрельба в направлении расположения курсора
         EndLocation =
             ShootLocation->GetComponentLocation() +
             ApplyDispersionToShoot((ShootLocation->GetComponentLocation() - ShootEndLocation).GetSafeNormal()) *
@@ -445,7 +445,7 @@ FVector AWeaponDefault::GetFireEndLocation() const
     }
     else
     {
-        //стрельба в направлении дула оружия
+        // стрельба в направлении дула оружия
         EndLocation = ShootLocation->GetComponentLocation() +
                       ApplyDispersionToShoot(ShootLocation->GetForwardVector()) * 20000.0f;
         if (ShowDebug)
@@ -480,7 +480,7 @@ int8 AWeaponDefault::GetNumberProjectileByShot() const
     return WeaponSetting.NumberProjectileByShot;
 }
 
-//функция возвращает кол-во выстрелов
+// функция возвращает кол-во выстрелов
 int32 AWeaponDefault::GetWeaponRound()
 {
     return AdditionalWeaponInfo.Round;
@@ -524,8 +524,8 @@ void AWeaponDefault::FinishReload()
 {
     WeaponReloading = false;
 
-    //берем доступное кол-во патронов из инвентаря
-    //если инвентаря нет возьмется мах кол-во
+    // берем доступное кол-во патронов из инвентаря
+    // если инвентаря нет возьмется мах кол-во
     int8 AviableAmmoFromInventory = GetAviableAmmoForReload();
     int8 AmmoNeedTakeFromInv;
     int8 NeedToReload = WeaponSetting.MaxRound - AdditionalWeaponInfo.Round;
@@ -554,23 +554,29 @@ void AWeaponDefault::CancelReload()
     DropClipFlag = false;
 }
 
-//функция проверки - остались ли патроны
+// функция проверки - остались ли патроны
 bool AWeaponDefault::CheckCanWeaponReload()
 {
     bool result = true;
     if (GetOwner())
     {
-        UCharacterInventoryComponent* MuInv = Cast<UCharacterInventoryComponent>(
+        UCharacterInventoryComponent* MyInv = Cast<UCharacterInventoryComponent>(
             GetOwner()->GetComponentByClass(UCharacterInventoryComponent::StaticClass()));
-        if (MuInv)
+        if (MyInv)
         {
             int8 AviableAmmoForWeapon;
-            if (!MuInv->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
+            if (!MyInv->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
             {
                 result = false;
+                MyInv->OnWeaponNotHaveRound.Broadcast(MyInv->GetWeaponIndexSlotByName(IdWeaponName));
+            }
+            else
+            {
+                MyInv->OnWeaponHaveRound.Broadcast(MyInv->GetWeaponIndexSlotByName(IdWeaponName));
             }
         }
     }
+
     return result;
 }
 

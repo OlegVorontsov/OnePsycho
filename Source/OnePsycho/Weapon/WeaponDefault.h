@@ -27,7 +27,7 @@ public:
     FOnWeaponReloadStart OnWeaponReloadStart;
     FOnWeaponReloadEnd OnWeaponReloadEnd;
 
-    //объекты для создания оружия
+    // объекты для создания оружия
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
     class USceneComponent* SceneComponent = nullptr;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
@@ -37,11 +37,11 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = Components)
     class UArrowComponent* ShootLocation = nullptr;
 
-    //переменная для структуры об оружии
+    // переменная для структуры об оружии
     UPROPERTY()
     FWeaponInfo WeaponSetting;
 
-    //переменная для дополнительной структуры об оружии
+    // переменная для дополнительной структуры об оружии
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
     FAdditionalWeaponInfo AdditionalWeaponInfo;
 
@@ -85,7 +85,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReloadLogic Debug")
     float ReloadTime = 0.0f;
 
-    //функция возвращает кол-во выстрелов
+    // функция возвращает кол-во выстрелов
     UFUNCTION(BlueprintCallable)
     int32 GetWeaponRound();
 

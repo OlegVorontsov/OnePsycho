@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "StateEffect.h"
+#include "Types.h"
 #include "OnePsycho_IGameActor.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -30,4 +31,11 @@ public:
     virtual void RemoveEffect(UStateEffect* RemoveEffect);
 
     virtual void AddEffect(UStateEffect* newEffect);
+
+    // inventory
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void DropWeaponToWorld(FDropItem DropItemInfo);
+
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void DropAmmoToWorld(EWeaponType TypeAmmo, int32 Cout);
 };

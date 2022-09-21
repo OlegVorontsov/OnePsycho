@@ -68,14 +68,14 @@ public:
     UFUNCTION(BlueprintCallable)
     UDecalComponent* GetCursorToWorld();
 
-    //движение
+    // движение
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     EMovementState MovementState = EMovementState::Aim_State;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FCharacterSpeed MovementSpeedInfo;
 
-    //переменные включения видов движения
+    // переменные включения видов движения
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool SprintRunEnabled = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -99,7 +99,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float RotationChangeStep = 5;
 
-    //переменные для реализации выносливости
+    // переменные для реализации выносливости
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float StaminaStepDown = 2.5;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -107,15 +107,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float BufferSprintRunStamina = 200;
 
-    //выносливость = скорости спринта
+    // выносливость = скорости спринта
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float SprintRunStamina = MovementSpeedInfo.SprintRunSpeedRun;
 
-    //предел выносливости
+    // предел выносливости
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float SprintRunStaminaUpperLimit = MovementSpeedInfo.SprintRunSpeedRun + BufferSprintRunStamina;
 
-    //функции движения
+    // функции движения
     UFUNCTION()
     void InputAxisX(float Value);
     UFUNCTION()
@@ -126,11 +126,11 @@ public:
     float AxisX = 0.0f;
     float AxisY = 0.0f;
 
-    //переменная результирущей скорости движения
+    // переменная результирущей скорости движения
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float ResSpeed = MovementSpeedInfo.RunSpeedNormal;
 
-    //функции изменения скорости движения
+    // функции изменения скорости движения
     UFUNCTION(BlueprintCallable)
     void CharacterUpdate();
     UFUNCTION(BlueprintCallable)
@@ -146,11 +146,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
     FName InitWeaponName;
 
-    //функция спавна оружия
+    // функция спавна оружия
     UFUNCTION(BlueprintCallable)
     void InitWeapon(FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon);
 
-    //функция перезарядки
+    // функция перезарядки
     UFUNCTION(BlueprintCallable)
     void TryReloadWeapon();
 
@@ -179,8 +179,13 @@ public:
     UFUNCTION(BlueprintNativeEvent)
     void WeaponReloadEnd_BP(bool bIsSuccess);
 
-    void TrySwicthNextWeapon();
+    void TrySwitchNextWeapon();
     void TrySwitchPreviosWeapon();
+
+    bool TrySwitchWeaponToIndexByKeyInput(int32 ToIndex);
+    void DropCurrentWeapon();
+
+    template <int32 Id> void TKeyPressed() { TrySwitchWeaponToIndexByKeyInput(Id); }
 
     UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
     int32 CurrentIndexWeapon = 0;

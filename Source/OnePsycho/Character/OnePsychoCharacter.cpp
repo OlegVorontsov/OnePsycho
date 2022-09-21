@@ -92,7 +92,7 @@ void AOnePsychoCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    //спавн курсора
+    // спавн курсора
     if (CursorMaterial)
     {
         CurrentCursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
@@ -104,13 +104,13 @@ UDecalComponent* AOnePsychoCharacter::GetCursorToWorld()
     return CurrentCursor;
 }
 
-//переопределяем стандартную функцию нажатия клавиш
+// переопределяем стандартную функцию нажатия клавиш
 void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputComponent)
 {
-    //стандартная функция
+    // стандартная функция
     Super::SetupPlayerInputComponent(NewInputComponent);
 
-    //переопределяем нажатия клавиш на наши функции
+    // переопределяем нажатия клавиш на наши функции
     NewInputComponent->BindAxis(TEXT("MoveForward"), this, &AOnePsychoCharacter::InputAxisX);
     NewInputComponent->BindAxis(TEXT("MoveRight"), this, &AOnePsychoCharacter::InputAxisY);
 
@@ -122,15 +122,41 @@ void AOnePsychoCharacter::SetupPlayerInputComponent(UInputComponent* NewInputCom
         TEXT("ReloadEvent"), EInputEvent::IE_Released, this, &AOnePsychoCharacter::TryReloadWeapon);
 
     NewInputComponent->BindAction(
-        TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwicthNextWeapon);
+        TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwitchNextWeapon);
     NewInputComponent->BindAction(
         TEXT("SwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TrySwitchPreviosWeapon);
 
     NewInputComponent->BindAction(
         TEXT("AbilityAction"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::TryAbilityEnabled);
+
+    NewInputComponent->BindAction(
+        TEXT("DropCurrentWeapon"), EInputEvent::IE_Pressed, this, &AOnePsychoCharacter::DropCurrentWeapon);
+
+    TArray<FKey> HotKeys;
+    HotKeys.Add(EKeys::One);
+    HotKeys.Add(EKeys::Two);
+    HotKeys.Add(EKeys::Three);
+    HotKeys.Add(EKeys::Four);
+    HotKeys.Add(EKeys::Five);
+    HotKeys.Add(EKeys::Six);
+    HotKeys.Add(EKeys::Seven);
+    HotKeys.Add(EKeys::Eight);
+    HotKeys.Add(EKeys::Nine);
+    HotKeys.Add(EKeys::Zero);
+
+    NewInputComponent->BindKey(HotKeys[1], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<1>);
+    NewInputComponent->BindKey(HotKeys[2], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<2>);
+    NewInputComponent->BindKey(HotKeys[3], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<3>);
+    NewInputComponent->BindKey(HotKeys[4], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<4>);
+    NewInputComponent->BindKey(HotKeys[5], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<5>);
+    NewInputComponent->BindKey(HotKeys[6], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<6>);
+    NewInputComponent->BindKey(HotKeys[7], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<7>);
+    NewInputComponent->BindKey(HotKeys[8], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<8>);
+    NewInputComponent->BindKey(HotKeys[9], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<9>);
+    NewInputComponent->BindKey(HotKeys[0], IE_Pressed, this, &AOnePsychoCharacter::TKeyPressed<0>);
 }
 
-//функции движения
+// функции движения
 void AOnePsychoCharacter::InputAxisX(float Value)
 {
     AxisX = Value;
@@ -146,53 +172,53 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
         AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
         AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
-        //проверка двигается ли персонаж
+        // проверка двигается ли персонаж
         if (AxisX != 0 || AxisY != 0)
             CharMoving = true;
         else
             CharMoving = false;
         ChangeMovementState();
 
-        //записываем в переменную поворот персонажа вокруг оси Z
+        // записываем в переменную поворот персонажа вокруг оси Z
         float ActualRotationYaw = GetActorRotation().Yaw;
 
-        //записываем в переменную контроллер персонажа
+        // записываем в переменную контроллер персонажа
         APlayerController* myController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
         if (myController && MovementState != EMovementState::SprintRun_State)
         {
-            //создаем переменную для точки куда указывает курсор
+            // создаем переменную для точки куда указывает курсор
             FHitResult ResultHit;
 
-            //получаем точки соприкосновения курсора по созданноу каналу
-            // myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
+            // получаем точки соприкосновения курсора по созданноу каналу
+            //  myController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery6, false, ResultHit);
             myController->GetHitResultUnderCursor(ECC_GameTraceChannel1, true, ResultHit);
 
-            //получаем угол поворота в сторону курсора и записываем в переменную
+            // получаем угол поворота в сторону курсора и записываем в переменную
             float FindRotatorResultYaw =
                 UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
 
-            //вычисляем разницу в углах поворота в сторону курсора и персонажа
+            // вычисляем разницу в углах поворота в сторону курсора и персонажа
             float YawDifference = FindRotatorResultYaw - ActualRotationYaw;
 
-            //коррекция определения ротации (в градусах)
-            // if (YawDifference < -180)
-            // YawDifference += 360;
-            // else if (YawDifference > 180)
-            // YawDifference -= 360;
+            // коррекция определения ротации (в градусах)
+            //  if (YawDifference < -180)
+            //  YawDifference += 360;
+            //  else if (YawDifference > 180)
+            //  YawDifference -= 360;
 
-            //сглаживание поворота персонажа
-            // if (-RotationChangeStep >= YawDifference)
-            // AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
-            // else if (YawDifference >= RotationChangeStep)
-            // AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
-            // else
+            // сглаживание поворота персонажа
+            //  if (-RotationChangeStep >= YawDifference)
+            //  AddActorLocalRotation(FQuat(FRotator(0.0f, -RotationChangeStep, 0.0f)));
+            //  else if (YawDifference >= RotationChangeStep)
+            //  AddActorLocalRotation(FQuat(FRotator(0.0f, RotationChangeStep, 0.0f)));
+            //  else
             SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
 
-            //указываем оружию стрелять всторону расположения курсора
+            // указываем оружию стрелять всторону расположения курсора
             if (CurrentWeapon)
             {
-                //переменная высоты от пола до оружия
+                // переменная высоты от пола до оружия
                 FVector Displacement = FVector(0);
                 switch (MovementState)
                 {
@@ -217,38 +243,38 @@ void AOnePsychoCharacter::MovementTick(float DeltaTime)
                 default:
                     break;
                 }
-                //передаем в оружие точку курсора + высоту над полом
+                // передаем в оружие точку курсора + высоту над полом
                 CurrentWeapon->ShootEndLocation = ResultHit.Location + Displacement;
                 // aim cursor like 3d Widget?
             }
         }
 
-        //реализация выносливости
+        // реализация выносливости
 
-        //если включен спринт и персонжа двигается
+        // если включен спринт и персонжа двигается
         if (MovementState == EMovementState::SprintRun_State && (AxisX != 0 || AxisY != 0))
         {
-            //если выносливость > скорости бега
+            // если выносливость > скорости бега
             if (SprintRunStamina > MovementSpeedInfo.RunSpeedNormal)
             {
-                //уменьшаем выносливость
+                // уменьшаем выносливость
                 SprintRunStamina -= StaminaStepDown;
             }
             else
             {
-                //переходим на бег
+                // переходим на бег
                 SprintRunEnabled = false;
                 MovementState = EMovementState::Run_State;
                 CharacterUpdate();
             }
-            //если выносливость < скорости спринта
+            // если выносливость < скорости спринта
             /*if (SprintRunStamina < MovementSpeedInfo.SprintRunSpeedRun)
             {
                 ResSpeed = SprintRunStamina;
                 GetCharacterMovement()->MaxWalkSpeed = ResSpeed;
             }*/
         }
-        //восстанавливаем выносливость
+        // восстанавливаем выносливость
         else
         {
             if (SprintRunStamina < SprintRunStaminaUpperLimit)
@@ -335,7 +361,7 @@ AWeaponDefault* AOnePsychoCharacter::GetCurrentWeapon()
     return CurrentWeapon;
 }
 
-//функция спавна оружия
+// функция спавна оружия
 void AOnePsychoCharacter::InitWeapon(
     FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon)
 {
@@ -400,7 +426,7 @@ void AOnePsychoCharacter::InitWeapon(
     }
 }
 
-//функции на инпут стрельбы
+// функции на инпут стрельбы
 void AOnePsychoCharacter::InputAttackPressed()
 {
     AttackCharEvent(true);
@@ -410,7 +436,7 @@ void AOnePsychoCharacter::InputAttackReleased()
     AttackCharEvent(false);
 }
 
-//функция стрельбы
+// функция стрельбы
 void AOnePsychoCharacter::AttackCharEvent(bool bIsFiring)
 {
     AWeaponDefault* myWeapon = nullptr;
@@ -465,16 +491,48 @@ void AOnePsychoCharacter::WeaponReloadStart_BP_Implementation(UAnimMontage* Anim
 
 void AOnePsychoCharacter::WeaponReloadEnd_BP_Implementation(bool bIsSuccess) {}
 
-void AOnePsychoCharacter::TrySwicthNextWeapon()
+bool AOnePsychoCharacter::TrySwitchWeaponToIndexByKeyInput(int32 ToIndex)
 {
-    // We have more then one weapon go switch
-    if (CharacterInventoryComponent->WeaponSlots.Num() > 1)
+    bool bIsSuccess = false;
+    if (CurrentWeapon && !CurrentWeapon->WeaponReloading &&
+        CharacterInventoryComponent->WeaponSlots.IsValidIndex(ToIndex))
     {
+        if (CurrentIndexWeapon != ToIndex && CharacterInventoryComponent)
+        {
+            int32 OldIndex = CurrentIndexWeapon;
+            FAdditionalWeaponInfo OldInfo;
+
+            if (CurrentWeapon)
+            {
+                OldInfo = CurrentWeapon->AdditionalWeaponInfo;
+                if (CurrentWeapon->WeaponReloading)
+                    CurrentWeapon->CancelReload();
+            }
+
+            bIsSuccess = CharacterInventoryComponent->SwitchWeaponByIndex(ToIndex, OldIndex, OldInfo);
+        }
+    }
+    return bIsSuccess;
+}
+
+void AOnePsychoCharacter::DropCurrentWeapon()
+{
+    if (CharacterInventoryComponent)
+    {
+        FDropItem ItemInfo;
+        CharacterInventoryComponent->DropWeapobByIndex(CurrentIndexWeapon, ItemInfo);
+    }
+}
+
+void AOnePsychoCharacter::TrySwitchNextWeapon()
+{
+    if (CurrentWeapon && !CurrentWeapon->WeaponReloading && CharacterInventoryComponent->WeaponSlots.Num() > 1)
+    {
+        // We have more then one weapon go switch
         int8 OldIndex = CurrentIndexWeapon;
         FAdditionalWeaponInfo OldInfo;
         if (CurrentWeapon)
         {
-            //записываем инфо текущего оружия
             OldInfo = CurrentWeapon->AdditionalWeaponInfo;
             if (CurrentWeapon->WeaponReloading)
                 CurrentWeapon->CancelReload();
@@ -482,7 +540,8 @@ void AOnePsychoCharacter::TrySwicthNextWeapon()
 
         if (CharacterInventoryComponent)
         {
-            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon + 1, OldIndex, OldInfo, true))
+            if (CharacterInventoryComponent->SwitchWeaponToIndexByNextPreviosIndex(
+                    CurrentIndexWeapon + 1, OldIndex, OldInfo, true))
             {
             }
         }
@@ -498,7 +557,7 @@ void AOnePsychoCharacter::TrySwitchPreviosWeapon()
         FAdditionalWeaponInfo OldInfo;
         if (CurrentWeapon)
         {
-            //записываем инфо текущего оружия
+            // записываем инфо текущего оружия
             OldInfo = CurrentWeapon->AdditionalWeaponInfo;
             if (CurrentWeapon->WeaponReloading)
                 CurrentWeapon->CancelReload();
@@ -507,7 +566,8 @@ void AOnePsychoCharacter::TrySwitchPreviosWeapon()
         if (CharacterInventoryComponent)
         {
             // InventoryComponent->SetAdditionalInfoWeapon(OldIndex, GetCurrentWeapon()->AdditionalWeaponInfo);
-            if (CharacterInventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo, false))
+            if (CharacterInventoryComponent->SwitchWeaponToIndexByNextPreviosIndex(
+                    CurrentIndexWeapon - 1, OldIndex, OldInfo, false))
             {
             }
         }
@@ -579,7 +639,7 @@ void AOnePsychoCharacter::CharDead()
     int32 rnd = FMath::RandHelper(DeadsAnim.Num());
     if (DeadsAnim.IsValidIndex(rnd) && DeadsAnim[rnd] && GetMesh() && GetMesh()->GetAnimInstance())
     {
-        //получаем время проигрывания анимации
+        // получаем время проигрывания анимации
         TimeAnim = DeadsAnim[rnd]->GetPlayLength();
         GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
     }
@@ -611,7 +671,7 @@ float AOnePsychoCharacter::TakeDamage(float DamageAmount, struct FDamageEvent co
         CharHealthComponent->ChangeHealthValue(-DamageAmount);
     }
 
-    //если идет урон по радиусу
+    // если идет урон по радиусу
     if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
     {
         AProjectileDefault* myProjectile = Cast<AProjectileDefault>(DamageCauser);
