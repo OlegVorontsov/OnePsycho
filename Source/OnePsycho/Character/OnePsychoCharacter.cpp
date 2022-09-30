@@ -436,6 +436,16 @@ void AOnePsychoCharacter::InputAttackReleased()
     AttackCharEvent(false);
 }
 
+TArray<UStateEffect*> AOnePsychoCharacter::GetCurrentEffectsOnChar()
+{
+    return Effects;
+}
+
+int32 AOnePsychoCharacter::GetCurrentWeaponIndex()
+{
+    return CurrentIndexWeapon;
+}
+
 // функция стрельбы
 void AOnePsychoCharacter::AttackCharEvent(bool bIsFiring)
 {
@@ -551,7 +561,7 @@ void AOnePsychoCharacter::TrySwitchNextWeapon()
 void AOnePsychoCharacter::TrySwitchPreviosWeapon()
 {
     // We have more then one weapon go switch
-    if (CharacterInventoryComponent->WeaponSlots.Num() > 1)
+    if (CurrentWeapon && !CurrentWeapon->WeaponReloading && CharacterInventoryComponent->WeaponSlots.Num() > 1)
     {
         int8 OldIndex = CurrentIndexWeapon;
         FAdditionalWeaponInfo OldInfo;

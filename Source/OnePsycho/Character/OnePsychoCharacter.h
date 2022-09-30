@@ -19,6 +19,29 @@ class AOnePsychoCharacter : public ACharacter, public IOnePsycho_IGameActor
 protected:
     virtual void BeginPlay() override;
 
+    // Inputs
+    UFUNCTION()
+    void InputAxisX(float Value);
+    UFUNCTION()
+    void InputAxisY(float Value);
+
+    UFUNCTION()
+    void InputAttackPressed();
+    UFUNCTION()
+    void InputAttackReleased();
+
+    void TrySwitchNextWeapon();
+    void TrySwitchPreviosWeapon();
+
+    void TryAbilityEnabled();
+
+    template <int32 Id> void TKeyPressed() { TrySwitchWeaponToIndexByKeyInput(Id); }
+    // Inputs end
+
+    // Flags and variables
+    float AxisX = 0.0f;
+    float AxisY = 0.0f;
+
 public:
     AOnePsychoCharacter();
 
@@ -57,6 +80,64 @@ private:
     // class UDecalComponent* CursorToWorld;
 
 public:
+    // Tick func
+    UFUNCTION()
+    void MovementTick(float DeltaTime);
+    // Tick Func End
+
+    // Func
+    // ФУНКЦИИ ПЕРСОНАЖА
+    UFUNCTION(BlueprintCallable)
+    void AttackCharEvent(bool bIsFiring);
+
+    UFUNCTION(BlueprintCallable)
+    void CharacterUpdate();
+    UFUNCTION(BlueprintCallable)
+    void ChangeMovementState();
+
+    // смерть персонажа
+    UFUNCTION()
+    void CharDead();
+
+    void EnableRagdoll();
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+        class AController* EventInstigator, AActor* DamageCauser) override;
+
+    // ФУНКЦИИ ОРУЖИЯ
+
+    UFUNCTION(BlueprintCallable)
+    void InitWeapon(FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon);
+
+    UFUNCTION(BlueprintCallable)
+    void TryReloadWeapon();
+
+    UFUNCTION(BlueprintCallable)
+    AWeaponDefault* GetCurrentWeapon();
+
+    UFUNCTION()
+    void WeaponFireStart(UAnimMontage* Anim);
+    UFUNCTION()
+    void WeaponReloadStart(UAnimMontage* Anim);
+    UFUNCTION()
+    void WeaponReloadEnd(bool bIsSuccess, int32 AmmoSafe);
+
+    UFUNCTION(BlueprintNativeEvent)
+    void WeaponFireStart_BP(UAnimMontage* Anim);
+    UFUNCTION(BlueprintNativeEvent)
+    void WeaponReloadStart_BP(UAnimMontage* Anim);
+    UFUNCTION(BlueprintNativeEvent)
+    void WeaponReloadEnd_BP(bool bIsSuccess);
+
+    bool TrySwitchWeaponToIndexByKeyInput(int32 ToIndex);
+    void DropCurrentWeapon();
+
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 GetCurrentWeaponIndex();
+
+    // Func end
+
+    // ПЕРЕМЕННЫЕ
+
     // Cursor
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cursor")
     UMaterialInterface* CursorMaterial = nullptr;
@@ -115,26 +196,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float SprintRunStaminaUpperLimit = MovementSpeedInfo.SprintRunSpeedRun + BufferSprintRunStamina;
 
-    // функции движения
-    UFUNCTION()
-    void InputAxisX(float Value);
-    UFUNCTION()
-    void InputAxisY(float Value);
-    UFUNCTION()
-    void MovementTick(float DeltaTime);
-
-    float AxisX = 0.0f;
-    float AxisY = 0.0f;
-
     // переменная результирущей скорости движения
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float ResSpeed = MovementSpeedInfo.RunSpeedNormal;
-
-    // функции изменения скорости движения
-    UFUNCTION(BlueprintCallable)
-    void CharacterUpdate();
-    UFUNCTION(BlueprintCallable)
-    void ChangeMovementState();
 
     // Weapon
     AWeaponDefault* CurrentWeapon = nullptr;
@@ -142,50 +206,12 @@ public:
     // Effects
     TArray<UStateEffect*> Effects;
 
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    TArray<UStateEffect*> GetCurrentEffectsOnChar();
+
     // for demo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
     FName InitWeaponName;
-
-    // функция спавна оружия
-    UFUNCTION(BlueprintCallable)
-    void InitWeapon(FName IdWeapon, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon);
-
-    // функция перезарядки
-    UFUNCTION(BlueprintCallable)
-    void TryReloadWeapon();
-
-    UFUNCTION(BlueprintCallable)
-    AWeaponDefault* GetCurrentWeapon();
-
-    UFUNCTION()
-    void InputAttackPressed();
-    UFUNCTION()
-    void InputAttackReleased();
-
-    UFUNCTION(BlueprintCallable)
-    void AttackCharEvent(bool bIsFiring);
-
-    UFUNCTION()
-    void WeaponFireStart(UAnimMontage* Anim);
-    UFUNCTION()
-    void WeaponReloadStart(UAnimMontage* Anim);
-    UFUNCTION()
-    void WeaponReloadEnd(bool bIsSuccess, int32 AmmoSafe);
-
-    UFUNCTION(BlueprintNativeEvent)
-    void WeaponFireStart_BP(UAnimMontage* Anim);
-    UFUNCTION(BlueprintNativeEvent)
-    void WeaponReloadStart_BP(UAnimMontage* Anim);
-    UFUNCTION(BlueprintNativeEvent)
-    void WeaponReloadEnd_BP(bool bIsSuccess);
-
-    void TrySwitchNextWeapon();
-    void TrySwitchPreviosWeapon();
-
-    bool TrySwitchWeaponToIndexByKeyInput(int32 ToIndex);
-    void DropCurrentWeapon();
-
-    template <int32 Id> void TKeyPressed() { TrySwitchWeaponToIndexByKeyInput(Id); }
 
     UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
     int32 CurrentIndexWeapon = 0;
@@ -199,16 +225,7 @@ public:
 
     void AddEffect(UStateEffect* newEffect) override;
 
-    void TryAbilityEnabled();
-
     UFUNCTION(BlueprintCallable)
     void InvulnerabilityEnabled();
     // End Interface
-
-    UFUNCTION()
-    void CharDead();
-
-    void EnableRagdoll();
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
-        class AController* EventInstigator, AActor* DamageCauser) override;
 };

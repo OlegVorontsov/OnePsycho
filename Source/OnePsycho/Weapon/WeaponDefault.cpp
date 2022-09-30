@@ -532,7 +532,7 @@ void AWeaponDefault::FinishReload()
 
     if (NeedToReload > AviableAmmoFromInventory)
     {
-        AdditionalWeaponInfo.Round = AviableAmmoFromInventory;
+        AdditionalWeaponInfo.Round += AviableAmmoFromInventory;
         AmmoNeedTakeFromInv = AviableAmmoFromInventory;
     }
     else
@@ -568,11 +568,12 @@ bool AWeaponDefault::CheckCanWeaponReload()
             if (!MyInv->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
             {
                 result = false;
-                MyInv->OnWeaponNotHaveRound.Broadcast(MyInv->GetWeaponIndexSlotByName(IdWeaponName));
+                // MyInv->OnWeaponNotHaveRound.Broadcast(MyInv->GetWeaponIndexSlotByName(IdWeaponName));
             }
             else
             {
-                MyInv->OnWeaponHaveRound.Broadcast(MyInv->GetWeaponIndexSlotByName(IdWeaponName));
+                result = true;
+                // MyInv->OnWeaponHaveRound.Broadcast(MyInv->GetWeaponIndexSlotByName(IdWeaponName));
             }
         }
     }
