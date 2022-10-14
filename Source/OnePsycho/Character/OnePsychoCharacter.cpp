@@ -643,6 +643,11 @@ void AOnePsychoCharacter::AddEffect(UStateEffect* newEffect)
     Effects.Add(newEffect);
 }
 
+void AOnePsychoCharacter::CharDead_BP_Implementation()
+{
+    // BP
+}
+
 void AOnePsychoCharacter::CharDead()
 {
     float TimeAnim = 0.0f;
@@ -655,7 +660,13 @@ void AOnePsychoCharacter::CharDead()
     }
 
     bIsAlive = false;
-    UnPossessed();
+
+    if (GetController())
+    {
+        GetController()->UnPossess();
+    }
+
+    // UnPossessed();
 
     GetWorldTimerManager().SetTimer(
         TimerHandle_RagDollTimer, this, &AOnePsychoCharacter::EnableRagdoll, TimeAnim, false);

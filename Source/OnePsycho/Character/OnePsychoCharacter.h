@@ -42,6 +42,10 @@ protected:
     float AxisX = 0.0f;
     float AxisY = 0.0f;
 
+    // смерть персонажа
+    UFUNCTION()
+    void CharDead();
+
 public:
     AOnePsychoCharacter();
 
@@ -94,10 +98,6 @@ public:
     void CharacterUpdate();
     UFUNCTION(BlueprintCallable)
     void ChangeMovementState();
-
-    // смерть персонажа
-    UFUNCTION()
-    void CharDead();
 
     void EnableRagdoll();
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
@@ -228,4 +228,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void InvulnerabilityEnabled();
     // End Interface
+
+    UFUNCTION(BlueprintNativeEvent)
+    void CharDead_BP();
 };
