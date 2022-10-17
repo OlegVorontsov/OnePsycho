@@ -111,7 +111,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void TryReloadWeapon();
 
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, BlueprintPure)
     AWeaponDefault* GetCurrentWeapon();
 
     UFUNCTION()

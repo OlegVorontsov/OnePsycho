@@ -50,4 +50,7 @@ public:
 
     void SetInvulnerabilityEnabled();
     void SetInvulnerabilityDisabled();
+
+    UFUNCTION(BlueprintCallable)
+    float GetShieldValue();
 };

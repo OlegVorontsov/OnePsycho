@@ -31,6 +31,8 @@ void UOnePsychoCharHealthComponent::ChangeShieldValue(float ChangeValue)
 {
     Shield += ChangeValue;
 
+    OnShieldChange.Broadcast(Shield, ChangeValue);
+
     if (Shield > 100.0f)
     {
         Shield = 100.0f;
@@ -48,8 +50,6 @@ void UOnePsychoCharHealthComponent::ChangeShieldValue(float ChangeValue)
 
         GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
     }
-
-    OnShieldChange.Broadcast(Shield, ChangeValue);
 }
 
 void UOnePsychoCharHealthComponent::CoolDownShieldEnd()
@@ -79,6 +79,11 @@ void UOnePsychoCharHealthComponent::RecoveryShield()
     OnShieldChange.Broadcast(Shield, ShieldRecoverValue);
 }
 
+float UOnePsychoCharHealthComponent::GetShieldValue()
+{
+    return Shield;
+}
+
 void UOnePsychoCharHealthComponent::SetInvulnerabilityEnabled()
 {
     bIsInvulnerable = true;
@@ -92,3 +97,5 @@ void UOnePsychoCharHealthComponent::SetInvulnerabilityDisabled()
 
     OnInvulnerabilityChange.Broadcast(bIsInvulnerable);
 }
+
+

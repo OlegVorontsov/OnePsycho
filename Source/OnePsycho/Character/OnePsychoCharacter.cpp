@@ -429,7 +429,10 @@ void AOnePsychoCharacter::InitWeapon(
 // функции на инпут стрельбы
 void AOnePsychoCharacter::InputAttackPressed()
 {
-    AttackCharEvent(true);
+    if (bIsAlive)
+    {
+        AttackCharEvent(true);
+    }
 }
 void AOnePsychoCharacter::InputAttackReleased()
 {
@@ -462,7 +465,7 @@ void AOnePsychoCharacter::AttackCharEvent(bool bIsFiring)
 
 void AOnePsychoCharacter::TryReloadWeapon()
 {
-    if (CurrentWeapon && !CurrentWeapon->WeaponReloading)
+    if (bIsAlive && CurrentWeapon && !CurrentWeapon->WeaponReloading)
     {
         if (CurrentWeapon->GetWeaponRound() < CurrentWeapon->WeaponSetting.MaxRound &&
             CurrentWeapon->CheckCanWeaponReload())
@@ -672,6 +675,10 @@ void AOnePsychoCharacter::CharDead()
         TimerHandle_RagDollTimer, this, &AOnePsychoCharacter::EnableRagdoll, TimeAnim, false);
 
     GetCursorToWorld()->SetVisibility(false);
+
+    AttackCharEvent(false);
+
+    CharDead_BP();
 }
 
 void AOnePsychoCharacter::EnableRagdoll()
