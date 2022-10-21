@@ -101,4 +101,13 @@ public:
     // функция сброса текущего оружия
     UFUNCTION(BlueprintCallable, Category = "Interface")
     bool GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo);
+
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    TArray<FWeaponSlot> GetWeaponSlots();
+
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    TArray<FAmmoSlot> GetAmmoSlots();
+
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    void InitInventory(TArray<FWeaponSlot> NewWeaponSlotsInfo, TArray<FAmmoSlot> NewAmmoSlotsInfo);
 };

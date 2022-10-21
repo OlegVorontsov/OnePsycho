@@ -11,11 +11,12 @@ AOnePsychoGameMode::AOnePsychoGameMode()
     PlayerControllerClass = AOnePsychoPlayerController::StaticClass();
 
     // set default pawn class to our Blueprinted character
-    static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Blueprint/Character/BP_Character"));
+    /*static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Blueprint/Character/BP_Character"));
     if (PlayerPawnBPClass.Class != nullptr)
     {
         DefaultPawnClass = PlayerPawnBPClass.Class;
-    }
+    }*/
+    DefaultPawnClass = AOnePsychoCharacter::StaticClass();
 }
 
 void AOnePsychoGameMode::PlayerCharacterDead() {}

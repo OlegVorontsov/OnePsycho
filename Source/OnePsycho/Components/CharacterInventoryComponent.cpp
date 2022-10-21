@@ -13,33 +13,6 @@ UCharacterInventoryComponent::UCharacterInventoryComponent()
 void UCharacterInventoryComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    // проходимся по массиву оружия
-    for (int8 i = 0; i < WeaponSlots.Num(); i++)
-    {
-        // получаем наш game instance
-        UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
-        if (myGI)
-        {
-            // проверяем чтобы оружие имело название
-            if (!WeaponSlots[i].NameItem.IsNone())
-            {
-                FWeaponInfo Info;
-
-                if (myGI->GetWeaponInfoByName(WeaponSlots[i].NameItem, Info))
-                    WeaponSlots[i].AdditionalInfo.Round = Info.MaxRound;
-            }
-        }
-    }
-
-    // кол-во слотов = кол-ву элементов в массиве оружия
-    MaxSlotsWeapon = WeaponSlots.Num();
-
-    if (WeaponSlots.IsValidIndex(0))
-    {
-        if (!WeaponSlots[0].NameItem.IsNone())
-            OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
-    }
 }
 
 void UCharacterInventoryComponent::TickComponent(
@@ -608,4 +581,48 @@ bool UCharacterInventoryComponent::GetDropItemInfoFromInventory(int32 IndexSlot,
         }
     }
     return result;
+}
+
+TArray<FWeaponSlot> UCharacterInventoryComponent::GetWeaponSlots()
+{
+    return WeaponSlots;
+}
+
+TArray<FAmmoSlot> UCharacterInventoryComponent::GetAmmoSlots()
+{
+    return AmmoSlots;
+}
+
+void UCharacterInventoryComponent::InitInventory(
+    TArray<FWeaponSlot> NewWeaponSlotsInfo, TArray<FAmmoSlot> NewAmmoSlotsInfo)
+{
+    WeaponSlots = NewWeaponSlotsInfo;
+    AmmoSlots = NewAmmoSlotsInfo;
+
+    // проходимся по массиву оружия
+    for (int8 i = 0; i < WeaponSlots.Num(); i++)
+    {
+        // получаем наш game instance
+        UOnePsychoGameInstance* myGI = Cast<UOnePsychoGameInstance>(GetWorld()->GetGameInstance());
+        if (myGI)
+        {
+            // проверяем чтобы оружие имело название
+            if (!WeaponSlots[i].NameItem.IsNone())
+            {
+                // FWeaponInfo Info;
+
+                // if (myGI->GetWeaponInfoByName(WeaponSlots[i].NameItem, Info))
+                // WeaponSlots[i].AdditionalInfo.Round = Info.MaxRound;
+            }
+        }
+    }
+
+    // кол-во слотов = кол-ву элементов в массиве оружия
+    MaxSlotsWeapon = WeaponSlots.Num();
+
+    if (WeaponSlots.IsValidIndex(0))
+    {
+        if (!WeaponSlots[0].NameItem.IsNone())
+            OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
+    }
 }
