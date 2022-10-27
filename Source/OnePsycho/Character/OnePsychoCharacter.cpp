@@ -594,7 +594,7 @@ void AOnePsychoCharacter::TryAbilityEnabled()
         UStateEffect* NewEffect = NewObject<UStateEffect>(this, AbilityEffect);
         if (NewEffect)
         {
-            NewEffect->InitObject(this);
+            NewEffect->InitObject(this, NAME_None);
         }
     }
 }
@@ -606,7 +606,7 @@ void AOnePsychoCharacter::InvulnerabilityEnabled()
         UStateEffect* NewEffect = NewObject<UStateEffect>(this, InvulnerabilityEffect);
         if (NewEffect)
         {
-            NewEffect->InitObject(this);
+            NewEffect->InitObject(this, NAME_None);
         }
     }
 }
@@ -705,7 +705,7 @@ float AOnePsychoCharacter::TakeDamage(float DamageAmount, struct FDamageEvent co
         AProjectileDefault* myProjectile = Cast<AProjectileDefault>(DamageCauser);
         if (myProjectile)
         {
-            UTypes::AddEffectBySurfaceType(this, myProjectile->ProjectileSetting.Effect, GetSurfaceType());
+            UTypes::AddEffectBySurfaceType(this, NAME_None, myProjectile->ProjectileSetting.Effect, GetSurfaceType());
         }
     }
     return ActualDamage;

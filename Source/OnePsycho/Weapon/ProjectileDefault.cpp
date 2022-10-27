@@ -76,22 +76,22 @@ void AProjectileDefault::InitProjectile(FProjectileInfo InitParam)
 void AProjectileDefault::BulletCollisionSphereHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    //есть столкновение и у др есть физ материал
+    // есть столкновение и у др есть физ материал
     if (OtherActor && Hit.PhysMaterial.IsValid())
     {
-        //записываем в переменную физ материал с чем столкнулись
+        // записываем в переменную физ материал с чем столкнулись
         EPhysicalSurface mySurfacetype = UGameplayStatics::GetSurfaceType(Hit);
 
-        //если такой материал есть в библиотеке
+        // если такой материал есть в библиотеке
         if (ProjectileSetting.HitDecals.Contains(mySurfacetype))
         {
-            //записываем его в переменную
+            // записываем его в переменную
             UMaterialInterface* myMaterial = ProjectileSetting.HitDecals[mySurfacetype];
 
-            //если записался материал и есть компонент в точке пересечения
+            // если записался материал и есть компонент в точке пересечения
             if (myMaterial && OtherComp)
             {
-                //наносим декаль
+                // наносим декаль
                 UGameplayStatics::SpawnDecalAttached(myMaterial, FVector(20.0f), OtherComp, NAME_None, Hit.ImpactPoint,
                     Hit.ImpactNormal.Rotation(), EAttachLocation::KeepWorldPosition, 10.0f);
             }
@@ -110,7 +110,7 @@ void AProjectileDefault::BulletCollisionSphereHit(UPrimitiveComponent* HitComp, 
             UGameplayStatics::PlaySoundAtLocation(GetWorld(), ProjectileSetting.HitSound, Hit.ImpactPoint);
         }
 
-        UTypes::AddEffectBySurfaceType(Hit.GetActor(), ProjectileSetting.Effect, mySurfacetype);
+        UTypes::AddEffectBySurfaceType(Hit.GetActor(), Hit.BoneName, ProjectileSetting.Effect, mySurfacetype);
     }
 
     UGameplayStatics::ApplyPointDamage(

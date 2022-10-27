@@ -13,7 +13,7 @@ class ONEPSYCHO_API UStateEffect : public UObject
     GENERATED_BODY()
 
 public:
-    virtual bool InitObject(AActor* Actor);
+    virtual bool InitObject(AActor* Actor, FName NameBoneHit);
 
     virtual void DestroyObject();
 
@@ -26,14 +26,14 @@ public:
     AActor* myActor = nullptr;
 };
 
-//разовый эффект
+// разовый эффект
 UCLASS()
 class ONEPSYCHO_API UStateEffect_ExecuteOnce : public UStateEffect
 {
     GENERATED_BODY()
 
 public:
-    bool InitObject(AActor* Actor) override;
+    bool InitObject(AActor* Actor, FName NameBoneHit) override;
     void DestroyObject() override;
 
     virtual void ExecuteOnce();
@@ -42,14 +42,14 @@ public:
     float Power = 20.0f;
 };
 
-//эффект по таймеру
+// эффект по таймеру
 UCLASS()
 class ONEPSYCHO_API UStateEffect_ExecuteTimer : public UStateEffect
 {
     GENERATED_BODY()
 
 public:
-    bool InitObject(AActor* Actor) override;
+    bool InitObject(AActor* Actor, FName NameBoneHit) override;
     void DestroyObject() override;
 
     virtual void Execute();
@@ -72,20 +72,20 @@ public:
     UParticleSystemComponent* ParticleEmitter = nullptr;
 };
 
-//эффект неу€звимости по таймеру
+// эффект неу€звимости по таймеру
 UCLASS()
 class ONEPSYCHO_API UStateEffect_InvulnerabilityTimer : public UStateEffect
 {
     GENERATED_BODY()
 
 public:
-    bool InitObject(AActor* Actor) override;
+    bool InitObject(AActor* Actor, FName NameBoneHit) override;
     void DestroyObject() override;
 
     virtual void Execute();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting ExecuteTimer")
-        float Timer = 20.0f;
+    float Timer = 20.0f;
 
     FTimerHandle TimerHandle_EffectTimer;
 };

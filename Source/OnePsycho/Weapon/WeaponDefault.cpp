@@ -332,7 +332,7 @@ void AWeaponDefault::Fire()
                             Hit.ImpactPoint);
                     }
 
-                    UTypes::AddEffectBySurfaceType(Hit.GetActor(), ProjectileInfo.Effect, mySurfacetype);
+                    UTypes::AddEffectBySurfaceType(Hit.GetActor(), Hit.BoneName, ProjectileInfo.Effect, mySurfacetype);
 
                     // if (Hit.GetActor()->GetClass()->ImplementsInterface(UOnePsycho_IGameActor::StaticClass()))
                     //{

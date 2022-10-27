@@ -5,7 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "OnePsycho_IGameActor.h"
 
-bool UStateEffect::InitObject(AActor* Actor)
+bool UStateEffect::InitObject(AActor* Actor, FName NameBoneHit)
 {
     myActor = Actor;
 
@@ -33,11 +33,11 @@ void UStateEffect::DestroyObject()
     }
 }
 
-bool UStateEffect_ExecuteOnce::InitObject(AActor* Actor)
+bool UStateEffect_ExecuteOnce::InitObject(AActor* Actor, FName NameBoneHit)
 {
     // return Super::InitObject(Actor);
 
-    Super::InitObject(Actor);
+    Super::InitObject(Actor, NameBoneHit);
     ExecuteOnce();
     return true;
 }
@@ -62,9 +62,9 @@ void UStateEffect_ExecuteOnce::DestroyObject()
     Super::DestroyObject();
 }
 
-bool UStateEffect_ExecuteTimer::InitObject(AActor* Actor)
+bool UStateEffect_ExecuteTimer::InitObject(AActor* Actor, FName NameBoneHit)
 {
-    Super::InitObject(Actor);
+    Super::InitObject(Actor, NameBoneHit);
 
     GetWorld()->GetTimerManager().SetTimer(
         TimerHandle_EffectTimer, this, &UStateEffect_ExecuteTimer::DestroyObject, Timer, false);
@@ -73,16 +73,32 @@ bool UStateEffect_ExecuteTimer::InitObject(AActor* Actor)
 
     if (ParticleEffect)
     {
-        FName NameBoneToAttached;
+        FName NameBoneToAttached = NameBoneHit;
         FVector Loc = FVector(0);
 
-        ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, //
-            myActor->GetRootComponent(),                                         //
-            NameBoneToAttached,                                                  //
-            Loc,                                                                 //
-            FRotator::ZeroRotator,                                               //
-            EAttachLocation::SnapToTarget,                                       //
-            false);
+        USceneComponent* myMesh =
+            Cast<USceneComponent>(myActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+
+        if (myMesh)
+        {
+            ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, //
+                myMesh,                                                              //
+                NameBoneToAttached,                                                  //
+                Loc,                                                                 //
+                FRotator::ZeroRotator,                                               //
+                EAttachLocation::SnapToTarget,                                       //
+                false);
+        }
+        else
+        {
+            ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, //
+                myActor->GetRootComponent(),                                         //
+                NameBoneToAttached,                                                  //
+                Loc,                                                                 //
+                FRotator::ZeroRotator,                                               //
+                EAttachLocation::SnapToTarget,                                       //
+                false);
+        }
     }
     return true;
 }
@@ -109,9 +125,9 @@ void UStateEffect_ExecuteTimer::Execute()
     }
 }
 
-bool UStateEffect_InvulnerabilityTimer::InitObject(AActor* Actor)
+bool UStateEffect_InvulnerabilityTimer::InitObject(AActor* Actor, FName NameBoneHit)
 {
-    Super::InitObject(Actor);
+    Super::InitObject(Actor, NameBoneHit);
     Execute();
 
     GetWorld()->GetTimerManager().SetTimer(

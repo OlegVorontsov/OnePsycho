@@ -351,6 +351,6 @@ class ONEPSYCHO_API UTypes : public UBlueprintFunctionLibrary
 
 public:
     UFUNCTION(BlueprintCallable)
-    static void AddEffectBySurfaceType(
-        AActor* TakeEffectActor, TSubclassOf<UStateEffect> AddEffectClass, EPhysicalSurface SurfaceType);
+    static void AddEffectBySurfaceType(AActor* TakeEffectActor, FName NameBoneHit,
+        TSubclassOf<UStateEffect> AddEffectClass, EPhysicalSurface SurfaceType);
 };

@@ -5,7 +5,7 @@
 #include "OnePsycho_IGameActor.h"
 
 void UTypes::AddEffectBySurfaceType(
-    AActor* TakeEffectActor, TSubclassOf<UStateEffect> AddEffectClass, EPhysicalSurface SurfaceType)
+    AActor* TakeEffectActor, FName NameBoneHit, TSubclassOf<UStateEffect> AddEffectClass, EPhysicalSurface SurfaceType)
 {
     if (SurfaceType != EPhysicalSurface::SurfaceType_Default && TakeEffectActor && AddEffectClass)
     {
@@ -55,7 +55,7 @@ void UTypes::AddEffectBySurfaceType(
                         UStateEffect* NewEffect = NewObject<UStateEffect>(TakeEffectActor, AddEffectClass);
                         if (NewEffect)
                         {
-                            NewEffect->InitObject(TakeEffectActor);
+                            NewEffect->InitObject(TakeEffectActor, NameBoneHit);
                         }
                     }
                 }
