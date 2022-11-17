@@ -690,6 +690,11 @@ void AOnePsychoCharacter::EnableRagdoll()
     }
 }
 
+bool AOnePsychoCharacter::GetIsAlive()
+{
+    return bIsAlive;
+}
+
 float AOnePsychoCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
     class AController* EventInstigator, AActor* DamageCauser)
 {

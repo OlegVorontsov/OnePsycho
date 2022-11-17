@@ -3,6 +3,7 @@
 #include "ProjectileDefault.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/AISense_Damage.h"
 
 AProjectileDefault::AProjectileDefault()
 {
@@ -115,6 +116,9 @@ void AProjectileDefault::BulletCollisionSphereHit(UPrimitiveComponent* HitComp, 
 
     UGameplayStatics::ApplyPointDamage(
         OtherActor, ProjectileSetting.ProjectileDamage, Hit.TraceStart, Hit, GetInstigatorController(), this, NULL);
+
+    UAISense_Damage::ReportDamageEvent(
+        GetWorld(), Hit.GetActor(), GetInstigator(), ProjectileSetting.ProjectileDamage, Hit.Location, Hit.Location);
 
     ImpactProjectile();
 }

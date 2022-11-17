@@ -43,6 +43,9 @@ protected:
     float AxisY = 0.0f;
 
     // смерть персонажа
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+        bool bIsAlive = true;
+
     UFUNCTION()
     void CharDead();
 
@@ -102,6 +105,9 @@ public:
     void EnableRagdoll();
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
         class AController* EventInstigator, AActor* DamageCauser) override;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    bool GetIsAlive();
 
     // ‘”Ќ ÷»» ќ–”∆»я
 
@@ -165,8 +171,6 @@ public:
     bool AimEnabled = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool CharMoving = false;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool bIsAlive = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     TArray<UAnimMontage*> DeadsAnim;
