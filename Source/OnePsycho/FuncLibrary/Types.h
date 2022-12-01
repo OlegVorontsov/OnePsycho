@@ -9,7 +9,7 @@
 
 class AProjectileDefault;
 
-//енам типов движения персонажа
+// енам типов движения персонажа
 UENUM(BlueprintType)
 enum class EMovementState : uint8
 {
@@ -20,7 +20,7 @@ enum class EMovementState : uint8
     SprintRun_State UMETA(DisplayName = "SprintRun State")
 };
 
-//енам типов оружия
+// енам типов оружия
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
@@ -30,7 +30,7 @@ enum class EWeaponType : uint8
     LauncherType UMETA(DisplayName = "Launcher")
 };
 
-//структура скоростей движения персонажа
+// структура скоростей движения персонажа
 USTRUCT(BlueprintType)
 struct FCharacterSpeed
 {
@@ -48,7 +48,7 @@ struct FCharacterSpeed
     float SprintRunSpeedRun = 800.0f;
 };
 
-//структура о пуле
+// структура о пуле
 USTRUCT(BlueprintType)
 struct FProjectileInfo
 {
@@ -75,6 +75,8 @@ struct FProjectileInfo
     float ProjectileLifeTime = 20.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
     float ProjectileInitSpeed = 2000.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
+    float ProjectileMaxSpeed = 2000.0f;
 
     // material to decal on hit
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FX")
@@ -113,7 +115,7 @@ struct FProjectileInfo
     float ExplodeFalloffCoef = 1.0f;
 };
 
-//структура разброса при стрельбе в разных положениях персонажа
+// структура разброса при стрельбе в разных положениях персонажа
 USTRUCT(BlueprintType)
 struct FWeaponDispersion
 {
@@ -165,7 +167,7 @@ struct FWeaponDispersion
     float Run_StateDispersionReduction = 0.1f;
 };
 
-//структура анимаций огня/перезарядки
+// структура анимаций огня/перезарядки
 USTRUCT(BlueprintType)
 struct FAnimationWeaponInfo
 {
@@ -188,7 +190,7 @@ struct FAnimationWeaponInfo
     UAnimMontage* AnimWeaponFire = nullptr;
 };
 
-//структура данных о выброшенных патроне/магазине
+// структура данных о выброшенных патроне/магазине
 USTRUCT(BlueprintType)
 struct FDropMeshInfo
 {
@@ -219,47 +221,47 @@ struct FDropMeshInfo
     float CustomMass = 0.0f;
 };
 
-//структура об оружии с доступом из таблиц
+// структура об оружии с доступом из таблиц
 USTRUCT(BlueprintType)
 struct FWeaponInfo : public FTableRowBase
 {
     GENERATED_BODY()
 
-    //класс оружия
+    // класс оружия
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Class")
     TSubclassOf<class AWeaponDefault> WeaponClass = nullptr;
 
-    //частота выстрелов
+    // частота выстрелов
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     float RateOfFire = 0.5f;
 
-    //время перезарядки
+    // время перезарядки
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     float ReloadTime = 2.0f;
 
-    //мах кол-во патронов в магазине
+    // мах кол-во патронов в магазине
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     int32 MaxRound = 10;
 
-    //кол-во пуль за 1 выстрел
+    // кол-во пуль за 1 выстрел
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     int32 NumberProjectileByShot = 1;
 
-    //добавляем структуру разброса при стрельбе
+    // добавляем структуру разброса при стрельбе
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dispersion ")
     FWeaponDispersion DispersionWeapon;
 
-    //звуки
+    // звуки
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound ")
     USoundBase* SoundFireWeapon = nullptr;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound ")
     USoundBase* SoundReloadWeapon = nullptr;
 
-    //эффект при выстреле
+    // эффект при выстреле
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FX ")
     UParticleSystem* EffectFireWeapon = nullptr;
 
-    //добавляем стрктуру о пуле
+    // добавляем стрктуру о пуле
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile ")
     FProjectileInfo ProjectileSetting;
 
@@ -291,7 +293,7 @@ struct FWeaponInfo : public FTableRowBase
     EWeaponType WeaponType = EWeaponType::RifleType;
 };
 
-//дополнительная структура об оружии
+// дополнительная структура об оружии
 USTRUCT(BlueprintType)
 struct FAdditionalWeaponInfo
 {
@@ -326,7 +328,7 @@ struct FAmmoSlot
     int32 MaxCout = 100;
 };
 
-//данные о выбрасываемом оружии
+// данные о выбрасываемом оружии
 USTRUCT(BlueprintType)
 struct FDropItem : public FTableRowBase
 {

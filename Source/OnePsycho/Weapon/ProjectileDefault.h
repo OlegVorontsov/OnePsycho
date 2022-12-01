@@ -41,10 +41,11 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
+    UFUNCTION(BlueprintCallable)
     void InitProjectile(FProjectileInfo InitParam);
 
     UFUNCTION()
-    void BulletCollisionSphereHit(class UPrimitiveComponent* HitComp, AActor* OtherActor,
+    virtual void BulletCollisionSphereHit(class UPrimitiveComponent* HitComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
     UFUNCTION()
